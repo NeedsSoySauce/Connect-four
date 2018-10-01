@@ -12,10 +12,24 @@ DO NOT REMOVE ANY FUNCTION DEFINITIONS - they all must be present when you submi
 
 int SecondPlacePrize(int prize1, int prize2, int prize3)
 {
-	// This definition is WRONG.  To avoid compiler warnings, all of the input variables have been
-	// referred to below.  Fix this function by *deleting this comment* and the code below, and
-	// writing a correct definition.  If you do not attempt this task, leave this definition unchanged.
-	return (prize1+prize2+prize3)-(prize1+prize2+prize3);
+
+	int prizes[] = {prize1, prize2, prize3};
+	int max = 0;
+	int mid = 0; // Second largest prize
+
+	for (int i = 0; i < 3; i++) {
+
+		if (prizes[i] >= max) {
+			mid = max;
+			max = prizes[i];
+
+		} else if (prizes[i] > mid) {
+			mid = prizes[i];
+		}
+
+	}
+
+	return mid;
 }
 
 int FourInARow(int values[], int length)
