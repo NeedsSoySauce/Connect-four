@@ -37,7 +37,22 @@ int FourInARow(int values[], int length)
 	// This definition is WRONG.  To avoid compiler warnings, all of the input variables have been
 	// referred to below.  Fix this function by *deleting this comment* and the code below, and
 	// writing a correct definition.  If you do not attempt this task, leave this definition unchanged.
-	return (values[0]+length)-(values[0]+length);
+	int seqLen = 1;
+	int seqVal = values[0];
+
+	for (int i = 1; i < length; i++) {
+		if (values[i] == seqVal) {
+			seqLen += 1;
+			if (seqLen == 4) {
+				return i-3;
+			}
+		} else {
+			seqVal = values[i];
+			seqLen = 1;
+		}
+	}
+
+	return -1;
 }
 
 int BinaryToDecimal(int binary)
