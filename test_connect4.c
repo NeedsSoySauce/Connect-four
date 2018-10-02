@@ -55,7 +55,6 @@ void MyTestFunction(void)
 	printf("   Decimal = %d\n", BinaryToDecimal(100000000));
 	printf("   Decimal = %d\n", BinaryToDecimal(1111111111)); // Maximum number of bits that can be held in an integer
 
-	return 0;
 
 	// An example of code that you could use to test Task Four.
 	// You should write additional tests of your own
@@ -68,6 +67,8 @@ void MyTestFunction(void)
 	medianAbilityB = MedianAbility(grpB, 10);
 	printf("   Median ability Group A = %.2f\n", medianAbilityA);
 	printf("   Median ability Group B = %.2f\n", medianAbilityB);
+
+	return;
 
 	// An example of code that you could use to test Task Five.
 	// You should write additional tests of your own

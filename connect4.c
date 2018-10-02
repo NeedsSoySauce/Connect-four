@@ -57,8 +57,8 @@ int FourInARow(int values[], int length)
 
 // Converts a given binary number to decimal
 // Done by moding the number by 10 to get the right-most digit 
-// and then shifting the value by 2 bits to get the exponent of 2^n
-// Following we divide by 10 to shift the whole number one place  
+// and then shifting the value by n bits to get the exponent of 2^n
+// Following, we divide by 10 to shift the whole number one place  
 // to the right, stripping off the previous digit
 int BinaryToDecimal(int binary)
 {
@@ -75,12 +75,26 @@ int BinaryToDecimal(int binary)
 	return decimal;
 }
 
+// Compares a and b and returns:
+// 1 if a > b
+// 0 if a == b
+// -1 if a < b
+int comparator(const void *a, const void *b) {
+	float diff = (*(double*)a - *(double*)b) ;
+	return (diff > 0 ? 1 : diff < 0 ? -1 : 0);
+}
+
 double MedianAbility(double abilities[], int length)
 {
-	// This definition is WRONG.  To avoid compiler warnings, all of the input variables have been
-	// referred to below.  Fix this function by *deleting this comment* and the code below, and
-	// writing a correct definition.  If you do not attempt this task, leave this definition unchanged.
-	return (abilities[0]+length)-(abilities[0]+length);
+	
+	qsort(abilities, length, sizeof(double), comparator);
+	int mid = length / 2;
+
+	if (length % 2) {
+		return abilities[mid];
+	} else {
+		return (abilities[mid-1] + abilities[mid]) / 2;
+	}
 }
 
 void RemoveSpaces(char *name)
