@@ -53,6 +53,9 @@ void MyTestFunction(void)
 	printf("   Decimal = %d\n", BinaryToDecimal(1));
 	printf("   Decimal = %d\n", BinaryToDecimal(11111111));
 	printf("   Decimal = %d\n", BinaryToDecimal(100000000));
+	printf("   Decimal = %d\n", BinaryToDecimal(1111111111)); // Maximum number of bits that can be held in an integer
+
+	return 0;
 
 	// An example of code that you could use to test Task Four.
 	// You should write additional tests of your own
