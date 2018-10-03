@@ -111,14 +111,16 @@ void RemoveSpaces(char *name)
 
 	while (name[i] != '\0') {
 
+		if (name[i] != ' ') {
+			i++;
+			continue;
+		}
+
 		// If we've encountered a space and aren't currently working past one, 
 		// shift our index right by 1 (to keep a single space)
 		if (!hasSpace && name[i] == ' ') { 
 			hasSpace = 1;
 			i++;
-		} else if (name[i] != ' ') {
-			i++;
-			continue;
 		}
 
 		j = i;
