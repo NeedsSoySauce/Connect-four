@@ -14,7 +14,7 @@ DO NOT REMOVE ANY FUNCTION DEFINITIONS - they all must be present when you submi
 int SecondPlacePrize(int prize1, int prize2, int prize3)
 {
 
-	int prizes[] = {prize1, prize2, prize3};
+	int prizes[MAX_SIZE] = {prize1, prize2, prize3};
 	int max = 0;
 	int mid = 0;
 
@@ -99,10 +99,27 @@ double MedianAbility(double abilities[], int length)
 
 void RemoveSpaces(char *name)
 {
-	// This definition is WRONG.  To avoid compiler warnings, all of the input variables have been
-	// referred to below.  Fix this function by *deleting this comment* and the code below, and
-	// writing a correct definition.  If you do not attempt this task, leave this definition unchanged.
-	name[0] = '\0';
+	
+	// Read left to right, shifting characters on the right to the last known non-space position
+	// After a space has been encountered
+
+	int i = 0;
+	int j = 0;
+
+	while (name[i] != '\0') {
+
+		// If this character is a space, find the next character that isn't and swap them
+		j = i;
+		while (name[j] == ' ') {
+			j++;
+		}
+
+		name[i] = name[j];
+		name[j] = ' ';
+		
+		
+		i++;
+	}
 }
 
 void InitialiseBoard(int board[MAX_SIZE][MAX_SIZE], int size)

@@ -68,7 +68,6 @@ void MyTestFunction(void)
 	printf("   Median ability Group A = %.2f\n", medianAbilityA);
 	printf("   Median ability Group B = %.2f\n", medianAbilityB);
 
-	return;
 
 	// An example of code that you could use to test Task Five.
 	// You should write additional tests of your own
@@ -77,12 +76,16 @@ void MyTestFunction(void)
 	char nameA[100] = "The       Champ";
 	char nameB[100] = "     I    AM      THE     GREATEST    ";
 	char nameC[100] = "Therearenospaceshereatall";
+	char nameD[100] = "d";
 	RemoveSpaces(nameA);
 	RemoveSpaces(nameB);
 	RemoveSpaces(nameC);
 	printf("   Name A = [%s]\n", nameA);
 	printf("   Name B = [%s]\n", nameB);
 	printf("   Name C = [%s]\n", nameC);
+	printf("   Name D = [%s]\n", nameD);
+
+	return;
 
 	// An example of code that you could use to test Task Six.
 	// You should write additional tests of your own
