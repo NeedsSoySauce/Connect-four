@@ -105,20 +105,45 @@ void RemoveSpaces(char *name)
 
 	int i = 0;
 	int j = 0;
+	int hasSpace = 0; // Whether a space-block has been encountered
+
+	printf("|%s|\n", name);
 
 	while (name[i] != '\0') {
 
-		// If this character is a space, find the next character that isn't and swap them
-		j = i;
-		while (name[j] == ' ') {
-			j++;
+		// If we've encountered a space and aren't currently working past one, 
+		// shift our index right by 1 (to keep a single space)
+		if (!hasSpace && name[i] == ' ') { 
+			hasSpace = 1;
+			i++;
+		} else if (name[i] != ' ') {
+			i++;
+			continue;
 		}
 
+		j = i;
+
+		// find the position of the next non-space character 
+		while (name[j] == ' ') {
+			j++;
+		} 
+
+		// If the character beside that non-space character is a space, then we set hasSpace
+		// to false to notify the next iteration, alternatively, if that character is the
+		// null terminator, then we still want to move it, but we don't want to 
+		// continue iterating
+		if (name[j] == '\0') {
+			name[i] = name[j];
+			return;
+		} else if (name[j+1] == ' ') {
+			hasSpace = 0;
+		}
+
+		// Now we swap the value at position i with the value at position j
 		name[i] = name[j];
 		name[j] = ' ';
-		
-		
 		i++;
+	
 	}
 }
 
