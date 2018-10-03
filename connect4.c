@@ -99,18 +99,12 @@ double MedianAbility(double abilities[], int length)
 
 void RemoveSpaces(char *name)
 {
-	
-	// Read left to right, shifting characters on the right to the last known non-space position
-	// After a space has been encountered
-
-	int i = 0;
-	int j = 0;
-	int hasSpace = 0; // Whether a space-block has been encountered
-
-	printf("|%s|\n", name);
+	int i = 0; // i is our 'write' position and always records the position we're writing to
+	int j = 0; // j is our 'read' postion and always records the position we're reading from
 
 	while (name[i] != '\0') {
 
+		// If this character isn't a space then we don't need to do anything
 		if (name[i] != ' ') {
 			i++;
 			continue;
@@ -118,34 +112,36 @@ void RemoveSpaces(char *name)
 
 		// If we've encountered a space and aren't currently working past one, 
 		// shift our index right by 1 (to keep a single space)
-		if (!hasSpace && name[i] == ' ') { 
-			hasSpace = 1;
+		if (name[i] == ' ') { 
 			i++;
 		}
 
 		j = i;
 
-		// find the position of the next non-space character 
+		// Shift j to the next non-space character
 		while (name[j] == ' ') {
 			j++;
-		} 
-
-		// If the character beside that non-space character is a space, then we set hasSpace
-		// to false to notify the next iteration, alternatively, if that character is the
-		// null terminator, then we still want to move it, but we don't want to 
-		// continue iterating
-		if (name[j] == '\0') {
-			name[i] = name[j];
-			return;
-		} else if (name[j+1] == ' ') {
-			hasSpace = 0;
 		}
 
-		// Now we swap the value at position i with the value at position j
-		name[i] = name[j];
-		name[j] = ' ';
-		i++;
-	
+		// Copy all the non-space characters to the right of this 
+		// until we encounter a space or the null terminator
+		while (name[j] != ' ') {
+			
+			name[i] = name[j];
+
+			// If the character we copied was the null terminator, 
+			// we don't want to write anything behind it nor do we 
+			// want to continue iterating
+
+			if (name[j] == '\0') {
+				return;
+			} else {
+				name[j] = ' ';
+			}
+			
+			i++;
+			j++;
+		} 
 	}
 }
 
