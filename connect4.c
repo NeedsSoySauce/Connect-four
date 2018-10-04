@@ -111,7 +111,7 @@ void RemoveSpaces(char *name)
 		}
 
 		// If we've encountered a space shift our index right by 1 
-		// (to keep a single space)
+		// to keep a single space
 		if (name[i] == ' ') { 
 			i++;
 		}
@@ -128,9 +128,8 @@ void RemoveSpaces(char *name)
 			
 			name[i] = name[j];
 
-			// If the character we swapped was the null terminator, 
-			// we don't want to write anything behind it nor do we 
-			// want to continue iterating
+			// If the character we swapped was the null terminator
+			// then we're done
 
 			if (name[j] == '\0') {
 				return;
@@ -146,10 +145,32 @@ void RemoveSpaces(char *name)
 
 void InitialiseBoard(int board[MAX_SIZE][MAX_SIZE], int size)
 {
-	// This definition is WRONG.  To avoid compiler warnings, all of the input variables have been
-	// referred to below.  Fix this function by *deleting this comment* and the code below, and
-	// writing a correct definition.  If you do not attempt this task, leave this definition unchanged.
-	board[0][0] = size-size-1;
+	
+	// Set the first n positions of the board to 0, unless that positions is
+	// at the center of the board, in which case we set it to 3
+
+	int i, j, centreStart, centreEnd;
+
+	// Set the whole board to 0
+	for (i = 0; i < size; i++) {
+		for (j = 0; j < size; j++) {
+			board[i][j] = 0;
+		}
+	}
+
+	centreStart = size / 2;
+	centreEnd = centreStart;
+	if (size % 2 == 0) {
+		centreStart--;
+	} 
+
+	// Set the center of the board to 3
+	for (i = centreStart; i <= centreEnd; i++) {
+		for (j = centreStart; j <= centreEnd; j++) {
+			board[i][j] = 3;
+		}
+	}
+
 }
 
 void AddMoveToBoard(int board[MAX_SIZE][MAX_SIZE], int size, char side, int move, int player, int *lastRow, int *lastCol)

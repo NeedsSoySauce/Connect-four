@@ -85,7 +85,7 @@ void MyTestFunction(void)
 	printf("   Name C = [%s]\n", nameC);
 	printf("   Name D = [%s]\n", nameD);
 
-	return;
+	
 
 	// An example of code that you could use to test Task Six.
 	// You should write additional tests of your own
@@ -115,6 +115,8 @@ void MyTestFunction(void)
 		}
 		printf("\n");
 	}
+
+	return;
 
 	// An example of code that you could use to test Task Seven.
 	// You should write additional tests of your own
