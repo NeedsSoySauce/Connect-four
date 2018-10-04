@@ -110,8 +110,8 @@ void RemoveSpaces(char *name)
 			continue;
 		}
 
-		// If we've encountered a space and aren't currently working past one, 
-		// shift our index right by 1 (to keep a single space)
+		// If we've encountered a space shift our index right by 1 
+		// (to keep a single space)
 		if (name[i] == ' ') { 
 			i++;
 		}
@@ -123,13 +123,12 @@ void RemoveSpaces(char *name)
 			j++;
 		}
 
-		// Copy all the non-space characters to the right of this 
-		// until we encounter a space or the null terminator
+		// Keep swapping characters until we encounter another space
 		while (name[j] != ' ') {
 			
 			name[i] = name[j];
 
-			// If the character we copied was the null terminator, 
+			// If the character we swapped was the null terminator, 
 			// we don't want to write anything behind it nor do we 
 			// want to continue iterating
 
