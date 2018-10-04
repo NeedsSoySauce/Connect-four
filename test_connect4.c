@@ -116,8 +116,6 @@ void MyTestFunction(void)
 		printf("\n");
 	}
 
-	return;
-
 	// An example of code that you could use to test Task Seven.
 	// You should write additional tests of your own
 	printf("\nTESTING TASK SEVEN:\n");
@@ -132,6 +130,8 @@ void MyTestFunction(void)
 	printf("   Token position: row=%d, col=%d\n", rowPosition, colPosition);
 	AddMoveToBoard(board7, size7, 'S', 5, 1, &rowPosition, &colPosition);
 	printf("   Token position: row=%d, col=%d\n", rowPosition, colPosition);
+	AddMoveToBoard(board7, size7, 'E', 2, 2, &rowPosition, &colPosition);
+	printf("   Token position: row=%d, col=%d\n", rowPosition, colPosition);
 	for (int i = 0; i < size7; i++) {
 		printf("   ");
 		for (int j = 0; j < size7; j++) {
@@ -139,6 +139,8 @@ void MyTestFunction(void)
 		}
 		printf("\n");
 	}
+
+	return;
 
 	// An example of code that you could use to test Task Eight.
 	// You should write additional tests of your own

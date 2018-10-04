@@ -145,16 +145,12 @@ void RemoveSpaces(char *name)
 
 void InitialiseBoard(int board[MAX_SIZE][MAX_SIZE], int size)
 {
-	
-	// Set the first n positions of the board to 0, unless that positions is
-	// at the center of the board, in which case we set it to 3
-
-	int i, j, centreStart, centreEnd;
+	int row, col, centreStart, centreEnd;
 
 	// Set the whole board to 0
-	for (i = 0; i < size; i++) {
-		for (j = 0; j < size; j++) {
-			board[i][j] = 0;
+	for (row = 0; row < size; row++) {
+		for (col = 0; col < size; col++) {
+			board[row][col] = 0;
 		}
 	}
 
@@ -165,9 +161,9 @@ void InitialiseBoard(int board[MAX_SIZE][MAX_SIZE], int size)
 	} 
 
 	// Set the center of the board to 3
-	for (i = centreStart; i <= centreEnd; i++) {
-		for (j = centreStart; j <= centreEnd; j++) {
-			board[i][j] = 3;
+	for (row = centreStart; row <= centreEnd; row++) {
+		for (col = centreStart; col <= centreEnd; col++) {
+			board[row][col] = 3;
 		}
 	}
 
@@ -175,12 +171,55 @@ void InitialiseBoard(int board[MAX_SIZE][MAX_SIZE], int size)
 
 void AddMoveToBoard(int board[MAX_SIZE][MAX_SIZE], int size, char side, int move, int player, int *lastRow, int *lastCol)
 {
-	// This definition is WRONG.  To avoid compiler warnings, all of the input variables have been
-	// referred to below.  Fix this function by *deleting this comment* and the code below, and
-	// writing a correct definition.  If you do not attempt this task, leave this definition unchanged.
-	*lastRow = 0;
-	*lastCol = 0;
-	board[0][0] = (size+side+move+player)-(size+side+move+player);
+
+	int row, col;
+	int rowVel = 0;
+	int colVel = 0;
+
+	// Convert the input move value into the equivalent array position
+	// as well as determining the correct direction to move the piece when it's placed
+
+	switch(side) {
+		case 'N' :
+			row = 0;
+			col = move;
+			rowVel = 1;
+			break;
+		case 'E' :
+			row = move;
+			col = size - 1;
+			colVel = -1;
+			break;
+		case 'S' :
+			row = size -1;
+			col = move;
+			rowVel = -1;
+			break;
+		case 'W' :
+			row = move;
+			col = 0;
+			colVel = 1;
+	}
+
+	// Check if the move is invalid
+	if (board[row][col] != 0) {
+		*lastRow = -1;
+		*lastCol = -1;
+		return;
+	}
+
+	// Keep "moving" the piece until it hits something while ensuring 
+	// we don't read anything that's out of bounds
+	while (row+rowVel >= 0 && col+colVel >= 0 && board[row+rowVel][col+colVel] == 0) {
+		row += rowVel;
+		col += colVel;
+	}
+	
+	board[row][col] = player;
+
+	*lastRow = row;
+	*lastCol = col;
+
 }
 
 int CheckGameOver(int board[MAX_SIZE][MAX_SIZE], int size, int player, int row, int col)
