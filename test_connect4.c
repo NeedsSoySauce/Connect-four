@@ -140,8 +140,6 @@ void MyTestFunction(void)
 		printf("\n");
 	}
 
-	return;
-
 	// An example of code that you could use to test Task Eight.
 	// You should write additional tests of your own
 	printf("\nTESTING TASK EIGHT:\n");
@@ -178,6 +176,8 @@ void MyTestFunction(void)
 	printf("   Checking for win for Player 1 in [%d, %d]\n", rowPos, colPos);
 	hasWon = CheckGameOver(board8, size8, 1, rowPos, colPos);
 	printf("   Result = %d\n", hasWon);
+
+	return;
 
 	// An example of code that you could use to test Task Nine.
 	// You should write additional tests of your own

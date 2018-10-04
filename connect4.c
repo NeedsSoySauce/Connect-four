@@ -14,6 +14,7 @@ DO NOT REMOVE ANY FUNCTION DEFINITIONS - they all must be present when you submi
 int SecondPlacePrize(int prize1, int prize2, int prize3)
 {
 
+	#pragma warning( suppress : 4204 )  
 	int prizes[MAX_SIZE] = {prize1, prize2, prize3};
 	int max = 0;
 	int mid = 0;
@@ -80,7 +81,7 @@ int BinaryToDecimal(int binary)
 // 0 if a == b
 // -1 if a < b
 int comparator(const void *a, const void *b) {
-	float diff = (*(double*)a - *(double*)b) ;
+	double diff = (*(double*)a - *(double*)b) ;
 	return (diff > 0 ? 1 : diff < 0 ? -1 : 0);
 }
 
@@ -224,10 +225,20 @@ void AddMoveToBoard(int board[MAX_SIZE][MAX_SIZE], int size, char side, int move
 
 int CheckGameOver(int board[MAX_SIZE][MAX_SIZE], int size, int player, int row, int col)
 {
-	// This definition is WRONG.  To avoid compiler warnings, all of the input variables have been
-	// referred to below.  Fix this function by *deleting this comment* and the code below, and
-	// writing a correct definition.  If you do not attempt this task, leave this definition unchanged.
-	return (board[0][0]+size+player+row+col)-(board[0][0]+size+player+row+col);
+	// There's at most "7" pieces that can be in a row, if the last piece is at the center
+	// So we scan all 4 directions using this principle
+
+	// If this player hasn't won, we'll check to see if they win due to placing the last piece
+	// So we search for any 0 values in the board
+
+	// Convert the 2d array to a single string containing the sequence of values in that 7*7 block of values
+	// From there we can match each pattern with a given sequence in 1D
+
+	// There are for directions we want to scan.
+	// 0 = down (testing for now)
+
+
+
 }
 
 void GetDisplayBoardString(int board[MAX_SIZE][MAX_SIZE], int size, char *boardString)
