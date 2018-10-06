@@ -3,12 +3,18 @@
 
 #include "connect4.h"
 
+#define SEQ_LEN 4
+
 /*
 *** Please replace this comment with your name and ID number ***
 This is the file that you will be submitting for marking
 Complete the definitions of the functions in this file
 DO NOT REMOVE ANY FUNCTION DEFINITIONS - they all must be present when you submit this file
 */
+
+typedef struct Point {
+	int row, col;
+} Pt;
 
 // Determines the second largest value of the three input values
 int SecondPlacePrize(int prize1, int prize2, int prize3)
@@ -223,31 +229,106 @@ void AddMoveToBoard(int board[MAX_SIZE][MAX_SIZE], int size, char side, int move
 
 }
 
+// Clamps a given integer between the given min and max (inclusive)
+int clamp(int a, int min, int max) {
+	if (a < min) {
+		return min;
+	} else if (a > max) {
+		return max;
+	} else {
+		return a;
+	}
+}
+
 int CheckGameOver(int board[MAX_SIZE][MAX_SIZE], int size, int player, int row, int col)
 {
-	// There's at most "7" pieces that can be in a row, if the last piece is at the center
-	// So we scan all 4 directions using this principle
+	Pt i, start, stop; 
+	int j, k, dir, seqLen;
+	int offset = SEQ_LEN -1;
 
-	// If this player hasn't won, we'll check to see if they win due to placing the last piece
-	// So we search for any 0 values in the board
+	// Go through each of the search direction
+	for (dir = 0; dir < 4; dir++) {
+		
+		// Set the start and stop positions for the search
+		if (dir == 0) { // Search from mid-left to mid-right
+			start.row = row;
+			start.col = col - offset;
+			stop.row = row;
+			stop.col = col + offset;
+		} else if (dir == 1) { // Search from mid-top to mid-bottom
+			start.row = row - offset;
+			start.col = col;
+			stop.row = row + offset;
+			stop.col = col;
+		} else if (dir == 2) { // Search from top-left to bottom-right
+			start.row = row - offset;
+			start.col = col - offset;
+			stop.row = row + offset;
+			stop.col = col + offset;
+		} else if (dir == 2) { // Search from bottom-left to top-right
+			start.row = row + offset;
+			start.col = col - offset;
+			stop.row = row - offset;
+			stop.col = col + offset;
+		} 
+		
+		// If any of the start or stop positions values are out of bounds
+		// of the board array we move them so they are in bounds
+		start.row = clamp(start.row, 0, size-1);
+		start.col = clamp(start.col, 0, size-1);
+		stop.row = clamp(stop.row, 0, size-1);
+		stop.col = clamp(stop.col, 0, size-1);
 
-	// Convert the 2d array to a single string containing the sequence of values in that 7*7 block of values
-	// From there we can match each pattern with a given sequence in 1D
+		// i is used here for readability
+		i.row = start.row;
+		i.col = start.col;
+		
+		// We adjust i such that it moves away from our stop position
+		// as our while loop will adjusts i at the start of each iteration
+		i.row += (i.row < stop.row ? -1 : i.row > stop.row ? 1 : 0);
+		i.col += (i.col < stop.col ? -1 : i.col > stop.col ? 1 : 0);
 
-	// There are for directions we want to scan.
-	// 0 = down (testing for now)
+		seqLen = 0;
 
+		// Since we don't know beforehand if our stop position is a lower and or higher index 
+		// position than our start position, we can only stop looking when we're at the stop position
+		while (i.row != stop.row || i.col != stop.col) {
 
+			// We adjust i such that it moves towards our stop position.
+			i.row += (i.row < stop.row ? 1 : i.row > stop.row ? -1 : 0);
+			i.col += (i.col < stop.col ? 1 : i.col > stop.col ? -1 : 0);
+			
+			if (board[i.row][i.col] == player) {
+				seqLen++;
+			} else {
+				seqLen = 0;
+			}
+
+			if (seqLen == SEQ_LEN) {
+				return player;
+			}
+
+		}
+
+	}
+
+	// The other condition for the player's victory is if there are no more valid moves
+	// This is equivalent to there being no empty spaces left on the edges of the board
+	for (j = 0; j < size; j+size-1) {
+		for (k = 0; k < size; k++) {
+			if (board[j][k] == 0 || board[k][j] == 0) {
+				return 0;
+			}
+		}
+	}
+
+	return 1;
 
 }
 
 void GetDisplayBoardString(int board[MAX_SIZE][MAX_SIZE], int size, char *boardString)
 {
-	// This definition is WRONG.  To avoid compiler warnings, all of the input variables have been
-	// referred to below.  Fix this function by *deleting this comment* and the code below, and
-	// writing a correct definition.  If you do not attempt this task, leave this definition unchanged.
-	board[0][0] = size-size;
-	boardString[0] = '\0';
+	
 }
 
 void GetMoveBot1(int board[MAX_SIZE][MAX_SIZE], int size, int player, char *side, int *move)
