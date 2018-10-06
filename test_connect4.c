@@ -177,8 +177,6 @@ void MyTestFunction(void)
 	hasWon = CheckGameOver(board8, size8, 1, rowPos, colPos);
 	printf("   Result = %d\n", hasWon);
 
-	return;
-
 	// An example of code that you could use to test Task Nine.
 	// You should write additional tests of your own
 	printf("\nTESTING TASK NINE:\n");
@@ -195,6 +193,8 @@ void MyTestFunction(void)
 	GetDisplayBoardString(board9, size9, boardString);
 	printf("   The length of the board string is: %d\n", strlen(boardString));
 	printf("%s", boardString);
+
+	return;
 
 	// An example of code that you could use to test Task Ten.
 	printf("\nTESTING TASK TEN:\n");

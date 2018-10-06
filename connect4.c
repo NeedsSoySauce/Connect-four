@@ -4,6 +4,11 @@
 #include "connect4.h"
 
 #define SEQ_LEN 4
+#define TOKEN1 'X'
+#define TOKEN2 'O'
+#define FIXED '#'
+#define SPACE '.'
+#define BORDER '-'
 
 /*
 *** Please replace this comment with your name and ID number ***
@@ -314,7 +319,7 @@ int CheckGameOver(int board[MAX_SIZE][MAX_SIZE], int size, int player, int row, 
 
 	// The other condition for the player's victory is if there are no more valid moves
 	// This is equivalent to there being no empty spaces left on the edges of the board
-	for (j = 0; j < size; j+size-1) {
+	for (j = 0; j < size; j+=size-1) {
 		for (k = 0; k < size; k++) {
 			if (board[j][k] == 0 || board[k][j] == 0) {
 				return 0;
@@ -322,13 +327,72 @@ int CheckGameOver(int board[MAX_SIZE][MAX_SIZE], int size, int player, int row, 
 		}
 	}
 
-	return 1;
+	return player;
 
 }
 
 void GetDisplayBoardString(int board[MAX_SIZE][MAX_SIZE], int size, char *boardString)
 {
-	
+	int row, col, boardVal;
+	char boardChar;
+	int strPos = 0;
+
+	for (row = 0; row < size + 4; row++) {
+		for (col = 0; col < size + 5; col++) {
+
+			if (col == size + 4) {
+				boardChar = '\n';
+
+			} else if (row < 2 || row > size + 1 || col < 2 || col > size + 1) {
+
+				if (col >= 2 && col <= size + 1) {
+					if (row == 0) {
+						boardChar = 'N';
+					} else if (row == size + 3) {
+						boardChar = 'S';
+					} else {
+						boardChar = (char)(col-2) + '0';
+					}
+
+				} else if (row >= 2 && row <= size + 1) {
+					if (col == 0) {
+						boardChar = 'W';
+					} else if (col == size + 3) {
+						boardChar = 'E';
+					} else {
+						boardChar = (char)(row-2) + '0';
+					}
+
+				} else {
+					boardChar = BORDER;
+				}
+
+			} else if (board[row-2][col-2] != 0) {
+
+				boardVal = board[row-2][col-2];
+
+				if (boardVal == 1) {
+					boardChar = TOKEN1;
+				} else if (boardVal == 2) {
+					boardChar = TOKEN2;
+				} else {
+					boardChar = FIXED;
+				}
+				
+
+			} else {
+				boardChar = SPACE;
+			}
+
+			boardString[strPos] = boardChar;
+			strPos++;
+			
+		}
+	}
+
+	boardString[strPos] = '\0';
+
+	printf("Size: %d\n", size);
 }
 
 void GetMoveBot1(int board[MAX_SIZE][MAX_SIZE], int size, int player, char *side, int *move)
