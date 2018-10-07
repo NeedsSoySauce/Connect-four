@@ -27,7 +27,7 @@ int SecondPlacePrize(int prize1, int prize2, int prize3)
 
 	// Suppress "nonstandard extension used : non-constant aggregate initializer"
 	// as the array is using a constant value and is known to function when compiled
-	// #pragma warning( suppress : 4204 )  
+	#pragma warning( suppress : 4204 )  
 	int prizes[MAX_SIZE] = {prize1, prize2, prize3};
 	int max = 0;
 	int mid = 0;
@@ -78,12 +78,12 @@ int BinaryToDecimal(int binary)
 {
 
 	int decimal = 0;
-	int count = 0;
+	int ntwo = 1; // starts at 2^0
 
 	while (binary) {
-		decimal += (binary % 10) << count;
+		decimal += (binary % 10) * ntwo;
 		binary /= 10;
-		count++;
+		ntwo *= 2;
 	}
 
 	return decimal;
