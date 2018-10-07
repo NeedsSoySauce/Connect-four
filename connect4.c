@@ -25,7 +25,9 @@ typedef struct Point {
 int SecondPlacePrize(int prize1, int prize2, int prize3)
 {
 
-	#pragma warning( suppress : 4204 )  
+	// Suppress "nonstandard extension used : non-constant aggregate initializer"
+	// as the array is using a constant value and is known to function when compiled
+	// #pragma warning( suppress : 4204 )  
 	int prizes[MAX_SIZE] = {prize1, prize2, prize3};
 	int max = 0;
 	int mid = 0;
@@ -194,7 +196,7 @@ void AddMoveToBoard(int board[MAX_SIZE][MAX_SIZE], int size, char side, int move
 	switch(side) {
 		case 'N' :
 			row = 0;
-			col = move;
+			col = move;			
 			rowVel = 1;
 			break;
 		case 'E' :
@@ -211,6 +213,10 @@ void AddMoveToBoard(int board[MAX_SIZE][MAX_SIZE], int size, char side, int move
 			row = move;
 			col = 0;
 			colVel = 1;
+			break;
+		default :
+			return; // Invalid move so we do nothing
+
 	}
 
 	// Check if the move is invalid
@@ -221,8 +227,8 @@ void AddMoveToBoard(int board[MAX_SIZE][MAX_SIZE], int size, char side, int move
 	}
 
 	// Keep "moving" the piece until it hits something while ensuring 
-	// we don't read anything that's out of bounds
-	while (row+rowVel >= 0 && col+colVel >= 0 && board[row+rowVel][col+colVel] == 0) {
+	// we don't to read anything that's out of bounds
+	while (row+rowVel >= 0 && col+colVel >= 0 && row+rowVel < size && col+colVel < size && board[row+rowVel][col+colVel] == 0) {
 		row += rowVel;
 		col += colVel;
 	}
@@ -234,7 +240,7 @@ void AddMoveToBoard(int board[MAX_SIZE][MAX_SIZE], int size, char side, int move
 
 }
 
-// Clamps a given integer between the given min and max (inclusive)
+// Clamps a given integer between the given min and max value (inclusive)
 int clamp(int a, int min, int max) {
 	if (a < min) {
 		return min;
@@ -245,13 +251,34 @@ int clamp(int a, int min, int max) {
 	}
 }
 
+// Clamps a given points x and y values between the given min and max (inclusive)
+// while also adjusting them in unison
+void ClampPoint(int *x, int *y, int min, int max) {
+
+	while(*x < min || *y < min) {
+		*x += 1;
+		*y += 1;
+	}
+
+	while(*x > max || *y > max) {
+		*x -= 1;
+		*y -= 1;
+	}
+}
+
 int CheckGameOver(int board[MAX_SIZE][MAX_SIZE], int size, int player, int row, int col)
 {
 	Pt i, start, stop; 
 	int j, k, dir, seqLen;
-	int offset = SEQ_LEN -1;
 
-	// Go through each of the search direction
+	int offset = SEQ_LEN - 1;
+
+	start.row = 0;
+	start.col = 0;
+	stop.row = 0;
+	stop.col = 0;
+
+	// Go through each of the search directions
 	for (dir = 0; dir < 4; dir++) {
 		
 		// Set the start and stop positions for the search
@@ -270,19 +297,24 @@ int CheckGameOver(int board[MAX_SIZE][MAX_SIZE], int size, int player, int row, 
 			start.col = col - offset;
 			stop.row = row + offset;
 			stop.col = col + offset;
-		} else if (dir == 2) { // Search from bottom-left to top-right
+		} else if (dir == 3) { // Search from bottom-left to top-right
 			start.row = row + offset;
 			start.col = col - offset;
 			stop.row = row - offset;
 			stop.col = col + offset;
-		} 
+		}
 		
 		// If any of the start or stop positions values are out of bounds
 		// of the board array we move them so they are in bounds
-		start.row = clamp(start.row, 0, size-1);
-		start.col = clamp(start.col, 0, size-1);
-		stop.row = clamp(stop.row, 0, size-1);
-		stop.col = clamp(stop.col, 0, size-1);
+		if (dir < 2) {
+			start.row = clamp(start.row, 0, size-1);
+			start.col = clamp(start.col, 0, size-1);
+			stop.row = clamp(stop.row, 0, size-1);
+			stop.col = clamp(stop.col, 0, size-1);
+		} else  {
+			ClampPoint(&start.row, &start.col, 0, size-1);
+			ClampPoint(&stop.row, &stop.col, 0, size-1);
+		}
 
 		// i is used here for readability
 		i.row = start.row;
@@ -392,7 +424,6 @@ void GetDisplayBoardString(int board[MAX_SIZE][MAX_SIZE], int size, char *boardS
 
 	boardString[strPos] = '\0';
 
-	printf("Size: %d\n", size);
 }
 
 void GetMoveBot1(int board[MAX_SIZE][MAX_SIZE], int size, int player, char *side, int *move)
