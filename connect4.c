@@ -10,6 +10,7 @@
 #define SPACE '.'
 #define BORDER '-'
 
+#define MAX_DEPTH 4
 /*
 Author: Feras Albaroudi
 StudentID: 606316303
@@ -450,11 +451,40 @@ void GetDisplayBoardString(int board[MAX_SIZE][MAX_SIZE], int size, char *boardS
 
 }
 
+int MiniMax(int board[MAX_SIZE][MAX_SIZE], int size, int player, char *side, int *move, int depth) {
+	
+	int score = 0;
+	int tempBoard[MAX_SIZE][MAX_SIZE];
+	int outcome = CheckGameOver(board, size, player, *side, *move);
+
+	memcpy(tempBoard, board, sizeof(int)*MAX_SIZE*MAX_SIZE);
+
+	// A game-winning move would mean victory
+	if (outcome != 0) {
+		if (outcome == player) {
+			return 10;
+		} else {
+			return -10;
+		}
+	} else if (depth == MAX_DEPTH) {
+		return 0;
+	} else {
+		// Call MiniMax for each possible position on the board
+		// based on the current board state
+		return score;
+	}
+}
+
+// This bot simply aims to place its tokens near eachother
 void GetMoveBot1(int board[MAX_SIZE][MAX_SIZE], int size, int player, char *side, int *move)
 {
-	// This definition is WRONG.  To avoid compiler warnings, all of the input variables have been
-	// referred to below.  Fix this function by *deleting this comment* and the code below, and
-	// writing a correct definition.  If you do not attempt this task, leave this definition unchanged.
+
+	// Figure out all valid moves. To limit the number of moves we make, we only consider moves that would be
+	// within SEQ_LEN of our current pieces for the initial split
+
+	// Convert each possible move to its equivalent row-col values
+
+
 	*side = 'N';
 	*move = 0;
 	board[0][0] = (size+player)-(size+player);
