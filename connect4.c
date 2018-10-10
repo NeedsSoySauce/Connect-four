@@ -3,6 +3,7 @@
 
 #include "connect4.h"
 
+#define ARR_SIZE 3
 #define SEQ_LEN 4
 #define TOKEN1 'X'
 #define TOKEN2 'O'
@@ -25,35 +26,37 @@ typedef struct Point {
 int SecondPlacePrize(int prize1, int prize2, int prize3)
 {
 
-	// Suppress "nonstandard extension used : non-constant aggregate initializer"
-	// as the array is using a constant value and is known to function when compiled
-	#pragma warning( suppress : 4204 )  
-	int prizes[MAX_SIZE] = {prize1, prize2, prize3};
-	int max = 0;
-	int mid = 0;
+	int max = prize1;
+	int second = prize1;
 
-	for (int i = 0; i < 3; i++) {
-
-		if (prizes[i] >= max) {
-			mid = max;
-			max = prizes[i];
-
-		} else if (prizes[i] > mid) {
-			mid = prizes[i];
-		}
-
+	if (prize2 > max) {
+		second = max;
+		max = prize2;		
+	} else if (prize2 > second) {
+		second = prize2;
 	}
 
-	return mid;
+	if (prize3 > max) {
+		second = max;
+		max = prize3;
+	} else if (prize3 > second) {
+		second = prize3;
+	}
+
+	return second;
 }
 
-// Determines the starting index of the first consecutive sequence of the same value
+// Determines the staxrting index of the first consecutive sequence of the same value
 // If no such sequence exists, returns -1
 int FourInARow(int values[], int length)
 {
 	int seqLen = 1;
 	int seqVal = values[0];
 
+	// Check each value in the sequence to see if it matches seqVal and, if so, increment
+	// seqLen by 1 and return the start of the sequence if seqLen equals 4. If the value
+	// did not equal seqVal, we set seqLen back to 1 and update seqVal to the current value
+	// as this signals the end of the last sequence and the start of a new sequence. 
 	for (int i = 1; i < length; i++) {
 		if (values[i] == seqVal) {
 			seqLen += 1;
@@ -70,16 +73,16 @@ int FourInARow(int values[], int length)
 }
 
 // Converts a given binary number to decimal
-// Done by moding the number by 10 to get the right-most digit 
-// and then shifting the value by n bits to get the exponent of 2^n
-// Following, we divide by 10 to shift the whole number one place  
-// to the right, stripping off the previous digit
 int BinaryToDecimal(int binary)
 {
 
 	int decimal = 0;
 	int ntwo = 1; // starts at 2^0
 
+	// Mod the binary number by 10 to get the right-most digit and 
+	// add that digits place value in base ten to the decimal value.
+	// We then perform integer division by 10 to strip off the right-most
+	// digit and continue until we're out of non-zero digits
 	while (binary) {
 		decimal += (binary % 10) * ntwo;
 		binary /= 10;
@@ -98,12 +101,16 @@ int comparator(const void *a, const void *b) {
 	return (diff > 0 ? 1 : diff < 0 ? -1 : 0);
 }
 
+// Finds the median value from an array
 double MedianAbility(double abilities[], int length)
 {
 	
+	// Sort the array into ascending order
 	qsort(abilities, length, sizeof(double), comparator);
 	int mid = length / 2;
 
+	// If the array is even the median value is the middle-most value in the array,
+	// otherwise it's the average of the two middle-most values in the array
 	if (length % 2) {
 		return abilities[mid];
 	} else {
@@ -111,10 +118,12 @@ double MedianAbility(double abilities[], int length)
 	}
 }
 
+// Removes excess spaces in a string by reducing any sequence of spaces in a string 
+// greater than 1 to a single space.
 void RemoveSpaces(char *name)
 {
 	int i = 0; // i is our 'write' position and always records the position we're writing to
-	int j = 0; // j is our 'read' postion and always records the position we're reading from
+	int j = 0; // j is our 'swap' postion and always records the position wrapping a value to/from
 
 	while (name[i] != '\0') {
 
@@ -168,6 +177,9 @@ void InitialiseBoard(int board[MAX_SIZE][MAX_SIZE], int size)
 		}
 	}
 
+	// centreStart is the row and col index of the center of the board.
+	// For an even board centreStart is offset by 1 towards the topleft of the board
+	// as the center will be a 2x2 "box" rather than a single position
 	centreStart = size / 2;
 	centreEnd = centreStart;
 	if (size % 2 == 0) {
@@ -215,7 +227,7 @@ void AddMoveToBoard(int board[MAX_SIZE][MAX_SIZE], int size, char side, int move
 			colVel = 1;
 			break;
 		default :
-			return; // Invalid move so we do nothing
+			return; // Invalid side so we do nothing
 
 	}
 
@@ -227,7 +239,7 @@ void AddMoveToBoard(int board[MAX_SIZE][MAX_SIZE], int size, char side, int move
 	}
 
 	// Keep "moving" the piece until it hits something while ensuring 
-	// we don't to read anything that's out of bounds
+	// we don't read anything that's out of bounds of the array
 	while (row+rowVel >= 0 && col+colVel >= 0 && row+rowVel < size && col+colVel < size && board[row+rowVel][col+colVel] == 0) {
 		row += rowVel;
 		col += colVel;
@@ -277,6 +289,11 @@ int CheckGameOver(int board[MAX_SIZE][MAX_SIZE], int size, int player, int row, 
 	start.col = 0;
 	stop.row = 0;
 	stop.col = 0;
+
+	// If the last move was invalid, that player couldn't possibly have won
+	if (row == -1 && col == 1) {
+		return 0;
+	}
 
 	// Go through each of the search directions
 	for (dir = 0; dir < 4; dir++) {

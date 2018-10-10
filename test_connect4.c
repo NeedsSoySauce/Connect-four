@@ -27,6 +27,8 @@ void MyTestFunction(void)
 	printf("=================\n");
 	printf("   Prize = %d\n", SecondPlacePrize(200, 100, 200));
 	printf("   Prize = %d\n", SecondPlacePrize(45, 600, 590));
+	printf("   Prize = %d\n", SecondPlacePrize(777, 777, 777));
+	printf("   Prize = %d\n", SecondPlacePrize(-100, -100, 200));
 
 	// An example of code that you could use to test Task Two.
 	// You should write additional tests of your own
@@ -257,9 +259,6 @@ void MyTestFunction(void)
 	printf("   Checking for win for Player 1 in [%d, %d]\n", rowPos, colPos);
 	hasWon = CheckGameOver(board8, size8, 1, rowPos, colPos);
 	printf("   Result = %d\n", hasWon);
-
-
-	return;
 
 	// An example of code that you could use to test Task Nine.
 	// You should write additional tests of your own
