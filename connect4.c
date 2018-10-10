@@ -3,7 +3,6 @@
 
 #include "connect4.h"
 
-#define ARR_SIZE 3
 #define SEQ_LEN 4
 #define TOKEN1 'X'
 #define TOKEN2 'O'
@@ -12,10 +11,8 @@
 #define BORDER '-'
 
 /*
-*** Please replace this comment with your name and ID number ***
-This is the file that you will be submitting for marking
-Complete the definitions of the functions in this file
-DO NOT REMOVE ANY FUNCTION DEFINITIONS - they all must be present when you submit this file
+Author: Feras Albaroudi
+StudentID: 606316303
 */
 
 typedef struct Point {
@@ -386,12 +383,18 @@ void GetDisplayBoardString(int board[MAX_SIZE][MAX_SIZE], int size, char *boardS
 	char boardChar;
 	int strPos = 0;
 
+	// Loop through each position in the board with one additional column to represent
+	// the newlines at the end of each row
 	for (row = 0; row < size + 4; row++) {
 		for (col = 0; col < size + 5; col++) {
 
+			// If we're at the end of this row in the board we want the next row to
+			// print below it
 			if (col == size + 4) {
 				boardChar = '\n';
 
+			// The boards border is two characters wide. We use this to determine if
+			// the current position is part of the boards border.
 			} else if (row < 2 || row > size + 1 || col < 2 || col > size + 1) {
 
 				if (col >= 2 && col <= size + 1) {
@@ -400,6 +403,8 @@ void GetDisplayBoardString(int board[MAX_SIZE][MAX_SIZE], int size, char *boardS
 					} else if (row == size + 3) {
 						boardChar = 'S';
 					} else {
+						// This adds the row/col number to the board string, offset by 
+						// 2 due to the board's border
 						boardChar = (char)(col-2) + '0';
 					}
 
@@ -412,10 +417,12 @@ void GetDisplayBoardString(int board[MAX_SIZE][MAX_SIZE], int size, char *boardS
 						boardChar = (char)(row-2) + '0';
 					}
 
+				// The BORDER constant is the character that's printed in the corners of the board
 				} else {
 					boardChar = BORDER;
 				}
 
+			// Adds player tokens and the fixed pieces at the center of the board to the board's string
 			} else if (board[row-2][col-2] != 0) {
 
 				boardVal = board[row-2][col-2];
@@ -428,7 +435,7 @@ void GetDisplayBoardString(int board[MAX_SIZE][MAX_SIZE], int size, char *boardS
 					boardChar = FIXED;
 				}
 				
-
+			// Finally anything else on the board must be an empty space on the board
 			} else {
 				boardChar = SPACE;
 			}
