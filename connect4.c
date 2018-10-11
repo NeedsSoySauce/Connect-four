@@ -11,6 +11,8 @@
 #define BORDER '-'
 
 #define MAX_DEPTH 4
+#define MAX_DIST 2 
+
 /*
 Author: Feras Albaroudi
 StudentID: 606316303
@@ -44,7 +46,7 @@ int SecondPlacePrize(int prize1, int prize2, int prize3)
 	return second;
 }
 
-// Determines the staxrting index of the first consecutive sequence of the same value
+// Determines the starting index of the first consecutive sequence of the same value
 // If no such sequence exists, returns -1
 int FourInARow(int values[], int length)
 {
@@ -451,27 +453,149 @@ void GetDisplayBoardString(int board[MAX_SIZE][MAX_SIZE], int size, char *boardS
 
 }
 
-int MiniMax(int board[MAX_SIZE][MAX_SIZE], int size, int player, char *side, int *move, int depth) {
-	
-	int score = 0;
-	int tempBoard[MAX_SIZE][MAX_SIZE];
-	int outcome = CheckGameOver(board, size, player, *side, *move);
+// Sets all values in "moves" to -1
+void ResetValidMoves(int moves[MAX_SIZE*4]) {
+	int i;
+	int size = MAX_SIZE * 4 - 4;
 
-	memcpy(tempBoard, board, sizeof(int)*MAX_SIZE*MAX_SIZE);
+	for (i = 0; i < size; i++) {
+		moves[i] = -1;	
+	}
+}
 
-	// A game-winning move would mean victory
-	if (outcome != 0) {
-		if (outcome == player) {
-			return 10;
-		} else {
-			return -10;
-		}
-	} else if (depth == MAX_DEPTH) {
-		return 0;
+// Returns one of four compass directions based on the given integer
+char IntToCompassDirection(int side) {
+	if (side == 0) {
+		return 'N';
+	} else if (side == 1) {
+		return 'E';
+	} else if (side == 2) {
+		return 'S';
 	} else {
-		// Call MiniMax for each possible position on the board
-		// based on the current board state
-		return score;
+		return 'W';
+	}
+}
+
+// Fills two arrays with all valid moves based on the current board state for the given player
+void GetValidMoves(int board[MAX_SIZE][MAX_SIZE], int size, int player, char sides[MAX_SIZE*4], int moves[MAX_SIZE*4]) {
+	// A valid move is considered as any move that:
+	// - Won't place a piece where one already exists on the edges of the board
+	// - Will result in the piece stopping within MAX_DIST of another piece from the same player
+	// ---- If the current player has no pieces on the board, then any move within MAX_DIST of 
+	// ---- the other player's piece will be accepted
+
+	int side, i, j;
+	int count = 0;
+
+	// Clear any moves currently recorded in the arrays of valid move positions
+	ResetValidMoves(moves);
+
+	// Go through each of the edge positions on the board
+	for (i = 0; i < size; i++) {
+		
+		// Check the North row
+		if (board[0][i] == 0) {
+			sides[i] = 'N';
+			moves[count] = i;
+			count++;
+		} 
+
+		// Check the east col
+		if (board[i][size-1] == 0) {
+			sides[i] = 'E';
+			moves[count] = i;
+			count++;
+		}
+
+		// Check the south col
+		if (board[size-1][i] == 0) {
+			sides[i] = 'S';
+			moves[count] = i;
+			count++;
+		}
+
+		// Check the west col
+		if (board[i][0] == 0) {
+			sides[i] = 'W';
+			moves[count] = i;
+			count++;
+		}
+
+	}
+
+}
+
+int arrayMax(int array[], int size) {
+	int max = array[0];
+	for (int i = 1; i < size; i++) {
+		if (array[i] > max) {
+			max = array[i];
+		}
+	}
+	return max;
+}
+
+int arrayMin(int array[], int size) {
+	int min = array[0];
+	for (int i = 1; i < size; i++) {
+		if (array[i] < min) {
+			min = array[i];
+		}
+	}
+	return min;
+}
+
+int Minimax(int board[MAX_SIZE][MAX_SIZE], int size, int player, char side, int move, int depth) {
+	
+	int i = 0;
+	int count = 0;
+	int row, col;
+	int ratings[MAX_SIZE*4] = {0};
+	char sides[MAX_SIZE*4];
+	int moves[MAX_SIZE*4];
+
+	// Add the given move to the board and then check the game's state
+	AddMoveToBoard(board, size, side, move, player, &row, &col);
+	int outcome = CheckGameOver(board, size, player, row, col);
+
+	// We keep calling Minimax until this node is either out of children
+	// or has reached the max tree depth
+	if (outcome != 0) {
+		board[row][col] = 0;
+		// Moves that move us towards a victory in less turns are rated higher,
+		// and, vice versa, moves that lead towards a loss in less turns are rated lower
+		if (outcome == player) {		
+			return 10 + (MAX_DEPTH - depth);
+		} else {
+			return -10 - (MAX_DEPTH - depth);
+		}
+	// If we've gotten to our max tree depth without a definite outcome, 
+	// we return 0 as neither player is advantaged by this move (up to this depth)
+	} else if (depth == MAX_DEPTH) { 
+		board[row][col] = 0;
+		return 0;
+	}
+
+	// Call Minimax for each valid move on the board
+	// based on the current board state
+	GetValidMoves(board, size, player, sides, moves);
+	while (moves[i] != -1) {
+		ratings[i] = Minimax(board, size, player, sides[i], moves[i], depth+1);
+		count++;
+	}
+
+	// Undo the changes we made to the board at this node
+	board[row][col] = 0;
+
+	// Each node could have multiple children, and depending on whos move was being simulated
+	// at that node, we either want to return the minimum or the maximum rating from that node
+	// If this node was simulating one of the root node's player's moves we want to return the move with
+	// the maximum rating. Since we simulate the root node's player's move first, we know that any nodes
+	// at an odd depth must be that player's turn
+	if (depth % 2) {
+		return arrayMax(ratings, count);
+	} else {
+		return arrayMin(ratings, count);
 	}
 }
 
@@ -484,6 +608,26 @@ void GetMoveBot1(int board[MAX_SIZE][MAX_SIZE], int size, int player, char *side
 
 	// Convert each possible move to its equivalent row-col values
 
+	// Create a temporary board that's a copy of the current board's state
+	// int tempBoard[MAX_SIZE][MAX_SIZE];
+	// memcpy(tempBoard, board, sizeof(int)*MAX_SIZE*MAX_SIZE);
+
+	int i = 0;
+	int depth = 0;
+	int ratings[MAX_SIZE*4] = {0};
+
+	// Initially we grab all the valid moves based on the board's current state
+	char sides[MAX_SIZE*4];
+	int moves[MAX_SIZE*4];
+	GetValidMoves(board, size, player, sides, moves);
+
+	// We then call Minimax on all valid moves based on the current board's state
+	while (moves[i] != -1) {
+		ratings[i] = Minimax(board, size, player, sides[i], moves[i], depth+1);
+	}
+
+	// The final move we submit will be the move with the highest score. If there's
+	// multiple options with the same score, we pick one at random
 
 	*side = 'N';
 	*move = 0;
