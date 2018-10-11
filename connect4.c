@@ -456,35 +456,19 @@ void GetDisplayBoardString(int board[MAX_SIZE][MAX_SIZE], int size, char *boardS
 // Sets all values in "moves" to -1
 void ResetValidMoves(int moves[MAX_SIZE*4]) {
 	int i;
-	int size = MAX_SIZE * 4 - 4;
+	int size = MAX_SIZE * 4;
 
 	for (i = 0; i < size; i++) {
 		moves[i] = -1;	
 	}
 }
 
-// Returns one of four compass directions based on the given integer
-char IntToCompassDirection(int side) {
-	if (side == 0) {
-		return 'N';
-	} else if (side == 1) {
-		return 'E';
-	} else if (side == 2) {
-		return 'S';
-	} else {
-		return 'W';
-	}
-}
-
 // Fills two arrays with all valid moves based on the current board state for the given player
-void GetValidMoves(int board[MAX_SIZE][MAX_SIZE], int size, int player, char sides[MAX_SIZE*4], int moves[MAX_SIZE*4]) {
+void GetValidMoves(int board[MAX_SIZE][MAX_SIZE], int size, char sides[MAX_SIZE*4], int moves[MAX_SIZE*4], int *length) {
 	// A valid move is considered as any move that:
 	// - Won't place a piece where one already exists on the edges of the board
-	// - Will result in the piece stopping within MAX_DIST of another piece from the same player
-	// ---- If the current player has no pieces on the board, then any move within MAX_DIST of 
-	// ---- the other player's piece will be accepted
 
-	int side, i, j;
+	int i;
 	int count = 0;
 
 	// Clear any moves currently recorded in the arrays of valid move positions
@@ -495,37 +479,40 @@ void GetValidMoves(int board[MAX_SIZE][MAX_SIZE], int size, int player, char sid
 		
 		// Check the North row
 		if (board[0][i] == 0) {
-			sides[i] = 'N';
+			sides[count] = 'N';
 			moves[count] = i;
 			count++;
 		} 
 
 		// Check the east col
 		if (board[i][size-1] == 0) {
-			sides[i] = 'E';
+			sides[count] = 'E';
 			moves[count] = i;
 			count++;
 		}
 
 		// Check the south col
 		if (board[size-1][i] == 0) {
-			sides[i] = 'S';
+			sides[count] = 'S';
 			moves[count] = i;
 			count++;
 		}
 
 		// Check the west col
 		if (board[i][0] == 0) {
-			sides[i] = 'W';
+			sides[count] = 'W';
 			moves[count] = i;
 			count++;
 		}
 
 	}
 
+	*length = count;
+
 }
 
-int arrayMax(int array[], int size) {
+// Returns the maximum value in the given array
+int MaxValue(int array[], int size) {
 	int max = array[0];
 	for (int i = 1; i < size; i++) {
 		if (array[i] > max) {
@@ -535,7 +522,8 @@ int arrayMax(int array[], int size) {
 	return max;
 }
 
-int arrayMin(int array[], int size) {
+// Returns the minimum value in the given array
+int MinValue(int array[], int size) {
 	int min = array[0];
 	for (int i = 1; i < size; i++) {
 		if (array[i] < min) {
@@ -545,10 +533,26 @@ int arrayMin(int array[], int size) {
 	return min;
 }
 
-int Minimax(int board[MAX_SIZE][MAX_SIZE], int size, int player, char side, int move, int depth) {
+// Returns the index position of the first occurence of "target" in the given array or
+// -1 if it cannot be found
+int FindFirstOccurence(int array[], int size, int target) {
+	for (int i = 0; i < size; i++) {
+		if (array[i] == target) {
+			return i;
+		}
+	}
+	return -1;
+}
+
+// Returns the index position of the first occurence of the max value in the given array
+int FindFirstMax(int array[], int size) {
+	return FindFirstOccurence(array, size, MaxValue(array, size));
+}
+
+int Minimax(int board[MAX_SIZE][MAX_SIZE], int size, int player, char side, int move, int depth, int rootPlayer) {
 	
+	int length = 0;
 	int i = 0;
-	int count = 0;
 	int row, col;
 	int ratings[MAX_SIZE*4] = {0};
 	char sides[MAX_SIZE*4];
@@ -564,7 +568,7 @@ int Minimax(int board[MAX_SIZE][MAX_SIZE], int size, int player, char side, int 
 		board[row][col] = 0;
 		// Moves that move us towards a victory in less turns are rated higher,
 		// and, vice versa, moves that lead towards a loss in less turns are rated lower
-		if (outcome == player) {		
+		if (outcome == rootPlayer) {		
 			return 10 + (MAX_DEPTH - depth);
 		} else {
 			return -10 - (MAX_DEPTH - depth);
@@ -576,70 +580,57 @@ int Minimax(int board[MAX_SIZE][MAX_SIZE], int size, int player, char side, int 
 		return 0;
 	}
 
-	// Call Minimax for each valid move on the board
-	// based on the current board state
-	GetValidMoves(board, size, player, sides, moves);
-	while (moves[i] != -1) {
-		ratings[i] = Minimax(board, size, player, sides[i], moves[i], depth+1);
-		count++;
+	GetValidMoves(board, size, sides, moves, &length);
+	
+	// Call Minimax for each valid move on the board based on the current board state
+	while (i < length) {
+		ratings[i] = Minimax(board, size, 3 - player, sides[i], moves[i], depth+1, rootPlayer);
+		i++;
 	}
 
 	// Undo the changes we made to the board at this node
 	board[row][col] = 0;
 
-	// Each node could have multiple children, and depending on whos move was being simulated
-	// at that node, we either want to return the minimum or the maximum rating from that node
-	// If this node was simulating one of the root node's player's moves we want to return the move with
-	// the maximum rating. Since we simulate the root node's player's move first, we know that any nodes
-	// at an odd depth must be that player's turn
-	if (depth % 2) {
-		return arrayMax(ratings, count);
+	// The player at the root node will want to pick moves that minimise their opponents advantage
+	// and vice versa
+	if (player == rootPlayer) {
+		return MinValue(ratings, i);
 	} else {
-		return arrayMin(ratings, count);
+		return MaxValue(ratings, i);
 	}
 }
 
-// This bot simply aims to place its tokens near eachother
+
 void GetMoveBot1(int board[MAX_SIZE][MAX_SIZE], int size, int player, char *side, int *move)
 {
-
-	// Figure out all valid moves. To limit the number of moves we make, we only consider moves that would be
-	// within SEQ_LEN of our current pieces for the initial split
-
-	// Convert each possible move to its equivalent row-col values
-
-	// Create a temporary board that's a copy of the current board's state
-	// int tempBoard[MAX_SIZE][MAX_SIZE];
-	// memcpy(tempBoard, board, sizeof(int)*MAX_SIZE*MAX_SIZE);
-
+	printf("Bot%d move\n", player);
+	int length = 0;
 	int i = 0;
 	int depth = 0;
+	int pos;
 	int ratings[MAX_SIZE*4] = {0};
-
-	// Initially we grab all the valid moves based on the board's current state
 	char sides[MAX_SIZE*4];
 	int moves[MAX_SIZE*4];
-	GetValidMoves(board, size, player, sides, moves);
+
+	// Initially we grab all the valid moves based on the board's current state
+	GetValidMoves(board, size, sides, moves, &length);
 
 	// We then call Minimax on all valid moves based on the current board's state
-	while (moves[i] != -1) {
-		ratings[i] = Minimax(board, size, player, sides[i], moves[i], depth+1);
+	while (i < length) {
+		ratings[i] = Minimax(board, size, player, sides[i], moves[i], depth+1, player);
+		i++;
 	}
 
 	// The final move we submit will be the move with the highest score. If there's
-	// multiple options with the same score, we pick one at random
+	// multiple options with the same score, we just pick the first one.
+	pos = FindFirstMax(ratings, i);
+	*move = moves[pos];
+	*side = sides[pos];
 
-	*side = 'N';
-	*move = 0;
-	board[0][0] = (size+player)-(size+player);
+	printf("Bot%d plays %c%d with rating %d\n", player, *side, *move, ratings[pos]);
 }
 
 void GetMoveBot2(int board[MAX_SIZE][MAX_SIZE], int size, int player, char *side, int *move)
 {
-	// This definition is WRONG.  To avoid compiler warnings, all of the input variables have been
-	// referred to below.  Fix this function by *deleting this comment* and the code below, and
-	// writing a correct definition.  If you do not attempt this task, leave this definition unchanged.
-	*side = 'N';
-	*move = 0;
-	board[0][0] = (size+player)-(size+player);
+	GetMoveBot1(board, size, player, side, move);
 }
