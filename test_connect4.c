@@ -260,6 +260,38 @@ void MyTestFunction(void)
 	hasWon = CheckGameOver(board8, size8, 1, rowPos, colPos);
 	printf("   Result = %d\n", hasWon);
 
+		// Check bottom-left to top-right diagonal victory
+	printf("\n--------> CHECKING FOR 1-off false-positive\n");
+	size8 = 7;
+	InitialiseBoard(board8, size8);
+
+	AddMoveToBoard(board8, size8, 'N', 6, 1, &rowPos, &colPos);
+	AddMoveToBoard(board8, size8, 'N', 6, 1, &rowPos, &colPos);
+	AddMoveToBoard(board8, size8, 'N', 6, 1, &rowPos, &colPos);
+	AddMoveToBoard(board8, size8, 'N', 6, 2, &rowPos, &colPos);
+	AddMoveToBoard(board8, size8, 'N', 6, 1, &rowPos, &colPos);
+	AddMoveToBoard(board8, size8, 'N', 6, 1, &rowPos, &colPos);
+	AddMoveToBoard(board8, size8, 'N', 6, 1, &rowPos, &colPos);
+
+	AddMoveToBoard(board8, size8, 'W', 2, 2, &rowPos, &colPos);
+	
+	AddMoveToBoard(board8, size8, 'S', 5, 1, &rowPos, &colPos);
+
+	
+	for (int i = 0; i < size8; i++) {
+		printf("   ");
+		for (int j = 0; j < size8; j++) {
+			printf("%d ", board8[i][j]);
+		}
+		printf("\n");
+	}
+	printf("   Checking for win for Player 1 in [%d, %d]\n", rowPos, colPos);
+	hasWon = CheckGameOver(board8, size8, 1, rowPos, colPos);
+	printf("   Result = %d\n", hasWon);
+
+	printf("REMEMBER TO REMORE THE RETURN BENEATH THIS\n");
+	return;
+
 	// An example of code that you could use to test Task Nine.
 	// You should write additional tests of your own
 	printf("\nTESTING TASK NINE:\n");

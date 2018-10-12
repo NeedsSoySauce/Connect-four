@@ -10,7 +10,7 @@
 #define SPACE '.'
 #define BORDER '-'
 
-#define MAX_DEPTH 3
+#define MAX_DEPTH 5
 
 /*
 Author: Feras Albaroudi
@@ -251,32 +251,6 @@ void AddMoveToBoard(int board[MAX_SIZE][MAX_SIZE], int size, char side, int move
 
 }
 
-// Clamps a given integer between the given min and max value (inclusive)
-int clamp(int a, int min, int max) {
-	if (a < min) {
-		return min;
-	} else if (a > max) {
-		return max;
-	} else {
-		return a;
-	}
-}
-
-// Clamps a given points x and y values between the given min and max (inclusive)
-// while also adjusting them in unison
-void ClampPoint(int *x, int *y, int min, int max) {
-
-	while(*x < min || *y < min) {
-		*x += 1;
-		*y += 1;
-	}
-
-	while(*x > max || *y > max) {
-		*x -= 1;
-		*y -= 1;
-	}
-}
-
 int CheckGameOver(int board[MAX_SIZE][MAX_SIZE], int size, int player, int row, int col)
 {
 	Pt i, start, stop; 
@@ -313,23 +287,11 @@ int CheckGameOver(int board[MAX_SIZE][MAX_SIZE], int size, int player, int row, 
 			start.col = col - offset;
 			stop.row = row + offset;
 			stop.col = col + offset;
-		} else if (dir == 3) { // Search from bottom-left to top-right
+		} else { // Search from bottom-left to top-right
 			start.row = row + offset;
 			start.col = col - offset;
 			stop.row = row - offset;
 			stop.col = col + offset;
-		}
-		
-		// If any of the start or stop positions values are out of bounds
-		// of the board array we move them so they are in bounds
-		if (dir < 2) {
-			start.row = clamp(start.row, 0, size-1);
-			start.col = clamp(start.col, 0, size-1);
-			stop.row = clamp(stop.row, 0, size-1);
-			stop.col = clamp(stop.col, 0, size-1);
-		} else  {
-			ClampPoint(&start.row, &start.col, 0, size-1);
-			ClampPoint(&stop.row, &stop.col, 0, size-1);
 		}
 
 		// i is used here for readability
@@ -337,20 +299,25 @@ int CheckGameOver(int board[MAX_SIZE][MAX_SIZE], int size, int player, int row, 
 		i.col = start.col;
 		
 		// We adjust i such that it moves away from our stop position
-		// as our while loop will adjusts i at the start of each iteration
+		// as our while loop adjusts i at the start of each iteration
 		i.row += (i.row < stop.row ? -1 : i.row > stop.row ? 1 : 0);
 		i.col += (i.col < stop.col ? -1 : i.col > stop.col ? 1 : 0);
 
 		seqLen = 0;
 
 		// Since we don't know beforehand if our stop position is a lower and or higher index 
-		// position than our start position, we can only stop looking when we're at the stop position
+		// position than our start position, we can only stop searching when we're at the stop position
 		while (i.row != stop.row || i.col != stop.col) {
 
 			// We adjust i such that it moves towards our stop position.
 			i.row += (i.row < stop.row ? 1 : i.row > stop.row ? -1 : 0);
 			i.col += (i.col < stop.col ? 1 : i.col > stop.col ? -1 : 0);
 			
+			// Ignore indexes that are out of array bounds
+			if (i.row < 0 || i.row > size - 1 || i.col < 0 || i.col > size - 1) {
+				continue;
+			}
+
 			if (board[i.row][i.col] == player) {
 				seqLen++;
 			} else {
@@ -452,16 +419,6 @@ void GetDisplayBoardString(int board[MAX_SIZE][MAX_SIZE], int size, char *boardS
 
 }
 
-// Sets all values in "moves" to -1
-void ResetValidMoves(int moves[MAX_SIZE*4]) {
-	int i;
-	int size = MAX_SIZE * 4;
-
-	for (i = 0; i < size; i++) {
-		moves[i] = -1;	
-	}
-}
-
 // Fills two arrays with all valid moves based on the current board state for the given player
 void GetValidMoves(int board[MAX_SIZE][MAX_SIZE], int size, char sides[MAX_SIZE*4], int moves[MAX_SIZE*4], int *length) {
 	// A valid move is considered as any move that:
@@ -469,9 +426,6 @@ void GetValidMoves(int board[MAX_SIZE][MAX_SIZE], int size, char sides[MAX_SIZE*
 
 	int i;
 	int count = 0;
-
-	// Clear any moves currently recorded in the arrays of valid move positions
-	ResetValidMoves(moves);
 
 	// Go through each of the edge positions on the board
 	for (i = 0; i < size; i++) {
@@ -510,61 +464,18 @@ void GetValidMoves(int board[MAX_SIZE][MAX_SIZE], int size, char sides[MAX_SIZE*
 
 }
 
-// Returns the maximum value in the given array
-int MaxValue(int array[], int size) {
-	int max = array[0];
-	for (int i = 1; i < size; i++) {
-		if (array[i] > max) {
-			max = array[i];
-		}
-	}
-	return max;
-}
-
-// Returns the minimum value in the given array
-int MinValue(int array[], int size) {
-	int min = array[0];
-	for (int i = 1; i < size; i++) {
-		if (array[i] < min) {
-			min = array[i];
-		}
-	}
-	return min;
-}
-
-// Returns the index position of the first occurence of "target" in the given array or
-// -1 if it cannot be found
-int FindFirstOccurence(int array[], int size, int target) {
-	for (int i = 0; i < size; i++) {
-		if (array[i] == target) {
-			return i;
-		}
-	}
-	return -1;
-}
-
-// Returns the index position of the first occurence of the max value in the given array
-int FindFirstMax(int array[], int size) {
-	return FindFirstOccurence(array, size, MaxValue(array, size));
-}
-
 int Minimax(int board[MAX_SIZE][MAX_SIZE], int size, int player, char side, int move, int depth, int rootPlayer) {
 	
-	int length = 0;
-	int i = 0;
-	int row, col;
+	int i, length, row, col, outcome;
 	int rating = 0;
-	int bestRating = 0;
-	char sides[MAX_SIZE*4];
+	int bestRating = INT_MIN;
 	int moves[MAX_SIZE*4];
+	char sides[MAX_SIZE*4];
+	
 
 	// Add the given move to the board and then check the game's state
 	AddMoveToBoard(board, size, side, move, player, &row, &col);
-	int outcome = CheckGameOver(board, size, player, row, col);
-
-	if (side == 'E' && move == 6 && depth == 1) {
-		printf("E6 = %d\n", outcome);
-	}
+	outcome = CheckGameOver(board, size, player, row, col);
 
 	// We keep calling Minimax until there's a change in the games state or we reach the max tree depth
 	if (outcome != 0) {
@@ -582,15 +493,15 @@ int Minimax(int board[MAX_SIZE][MAX_SIZE], int size, int player, char side, int 
 	GetValidMoves(board, size, sides, moves, &length);
 	
 	// Call Minimax for the other player for each valid move on the board
-	for (int i = 0; i < length; i++) {
+	for (i = 0; i < length; i++) {
 		rating = Minimax(board, size, 3 - player, sides[i], moves[i], depth+1, rootPlayer);
 		
 		if (player == rootPlayer) {
-			if (rating > bestRating) {
+			if (rating < bestRating) {
 				bestRating = rating;
 			}
 		} else {
-			if (rating < bestRating) {
+			if (rating > bestRating) {
 				bestRating = rating;
 			}
 		}
@@ -604,32 +515,35 @@ int Minimax(int board[MAX_SIZE][MAX_SIZE], int size, int player, char side, int 
 
 void GetMoveBot1(int board[MAX_SIZE][MAX_SIZE], int size, int player, char *side, int *move)
 {
-	printf("Bot%d move\n", player);
-	int length = 0;
-	int i = 0;
+	int i, length;
 	int depth = 0;
-	int pos;
-	int ratings[MAX_SIZE*4] = {0};
-	char sides[MAX_SIZE*4];
+	int rating = 0;
+	int max = 0;
+	int pos = 0;
 	int moves[MAX_SIZE*4];
+	char sides[MAX_SIZE*4];
+	
+	printf("Bot%d move\n", player);
 
 	// Initially we grab all the valid moves based on the board's current state
 	GetValidMoves(board, size, sides, moves, &length);
 
-	// We then call Minimax on all valid moves based on the current board's state
-	while (i < length) {
-		ratings[i] = Minimax(board, size, player, sides[i], moves[i], depth+1, player);
-		i++;
+	// Find the move with the highest rating for this player
+	for (i = 0; i < length; i++) {
+		rating = Minimax(board, size, player, sides[i], moves[i], depth+1, player);
+		if (rating >= max) {
+			max = rating;
+			pos = i;
+		}
 	}
 
-	// The final move we submit will be the move with the highest score. If there's
+	// The move we play will be the move with the highest rating. If there's
 	// multiple options with the same score, we just pick the first one.
-	printf("Bot%d max = %d, min = %d\n", player, MaxValue(ratings, i), MinValue(ratings, i));
-	pos = FindFirstMax(ratings, i);
 	*move = moves[pos];
 	*side = sides[pos];
 
-	printf("Bot%d plays %c%d with rating %d\n", player, *side, *move, ratings[pos]);
+	printf("Bot%d max = %d\n", player, max);
+	printf("Bot%d plays %c%d with rating %d\n", player, *side, *move, max);
 }
 
 void GetMoveBot2(int board[MAX_SIZE][MAX_SIZE], int size, int player, char *side, int *move)
