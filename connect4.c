@@ -10,8 +10,7 @@
 #define SPACE '.'
 #define BORDER '-'
 
-#define MAX_DEPTH 4
-#define MAX_DIST 2 
+#define MAX_DEPTH 3
 
 /*
 Author: Feras Albaroudi
@@ -554,7 +553,8 @@ int Minimax(int board[MAX_SIZE][MAX_SIZE], int size, int player, char side, int 
 	int length = 0;
 	int i = 0;
 	int row, col;
-	int ratings[MAX_SIZE*4] = {0};
+	int rating = 0;
+	int bestRating = 0;
 	char sides[MAX_SIZE*4];
 	int moves[MAX_SIZE*4];
 
@@ -562,19 +562,18 @@ int Minimax(int board[MAX_SIZE][MAX_SIZE], int size, int player, char side, int 
 	AddMoveToBoard(board, size, side, move, player, &row, &col);
 	int outcome = CheckGameOver(board, size, player, row, col);
 
-	// We keep calling Minimax until this node is either out of children
-	// or has reached the max tree depth
+	if (side == 'E' && move == 6 && depth == 1) {
+		printf("E6 = %d\n", outcome);
+	}
+
+	// We keep calling Minimax until there's a change in the games state or we reach the max tree depth
 	if (outcome != 0) {
 		board[row][col] = 0;
-		// Moves that move us towards a victory in less turns are rated higher,
-		// and, vice versa, moves that lead towards a loss in less turns are rated lower
 		if (outcome == rootPlayer) {		
 			return 10 + (MAX_DEPTH - depth);
 		} else {
 			return -10 - (MAX_DEPTH - depth);
 		}
-	// If we've gotten to our max tree depth without a definite outcome, 
-	// we return 0 as neither player is advantaged by this move (up to this depth)
 	} else if (depth == MAX_DEPTH) { 
 		board[row][col] = 0;
 		return 0;
@@ -582,24 +581,26 @@ int Minimax(int board[MAX_SIZE][MAX_SIZE], int size, int player, char side, int 
 
 	GetValidMoves(board, size, sides, moves, &length);
 	
-	// Call Minimax for each valid move on the board based on the current board state
-	while (i < length) {
-		ratings[i] = Minimax(board, size, 3 - player, sides[i], moves[i], depth+1, rootPlayer);
-		i++;
+	// Call Minimax for the other player for each valid move on the board
+	for (int i = 0; i < length; i++) {
+		rating = Minimax(board, size, 3 - player, sides[i], moves[i], depth+1, rootPlayer);
+		
+		if (player == rootPlayer) {
+			if (rating > bestRating) {
+				bestRating = rating;
+			}
+		} else {
+			if (rating < bestRating) {
+				bestRating = rating;
+			}
+		}
 	}
 
 	// Undo the changes we made to the board at this node
 	board[row][col] = 0;
 
-	// The player at the root node will want to pick moves that minimise their opponents advantage
-	// and vice versa
-	if (player == rootPlayer) {
-		return MinValue(ratings, i);
-	} else {
-		return MaxValue(ratings, i);
-	}
+	return bestRating;
 }
-
 
 void GetMoveBot1(int board[MAX_SIZE][MAX_SIZE], int size, int player, char *side, int *move)
 {
@@ -623,6 +624,7 @@ void GetMoveBot1(int board[MAX_SIZE][MAX_SIZE], int size, int player, char *side
 
 	// The final move we submit will be the move with the highest score. If there's
 	// multiple options with the same score, we just pick the first one.
+	printf("Bot%d max = %d, min = %d\n", player, MaxValue(ratings, i), MinValue(ratings, i));
 	pos = FindFirstMax(ratings, i);
 	*move = moves[pos];
 	*side = sides[pos];
