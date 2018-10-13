@@ -12,7 +12,7 @@ the project handout.
 */
 void MyTestFunction(void);
 void PlayConnectFour(void);
-void CountNeighbours(int board[MAX_SIZE][MAX_SIZE], int size, int player, int x, int y, 
+void CountNeighbours(int board[MAX_SIZE][MAX_SIZE], int size, int player, int x, int y, int dist,
 					int *playerTokens, int *opponentTokens, int *emptySpaces);
 
 /*
@@ -23,8 +23,8 @@ that you like.
 */
 
 void PrintBoard(int board[MAX_SIZE][MAX_SIZE], int size) {
-	char boardString;
-	GetDisplayBoardString(board, size, &boardString);
+	char boardString[250];
+	GetDisplayBoardString(board, size, boardString);
 	printf("%s", boardString);
 }
 
@@ -351,11 +351,8 @@ void MyTestFunction(void)
 		printf("\n");
 	}
 	int playerTokens, opponentTokens, emptySpaces;
-	CountNeighbours(board8, size8, 1, rowPos, colPos, &playerTokens, &opponentTokens, &emptySpaces);
+	CountNeighbours(board8, size8, 1, rowPos, colPos, 1, &playerTokens, &opponentTokens, &emptySpaces);
 	printf("Neighbours for (%d, %d):\n%d friendly\n%d opponent\n%d empty\n", rowPos, colPos, playerTokens, opponentTokens, emptySpaces);
-
-	printf("REMEMBER TO REMOVE THE RETURN BENEATH THIS\n");
-	return;
 
 	// An example of code that you could use to test Task Nine.
 	// You should write additional tests of your own

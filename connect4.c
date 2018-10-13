@@ -13,8 +13,11 @@
 #define SPACE '.'
 #define BORDER '-'
 
-// Used determine the max depth of the Minimax tree used by Bot 1 and 2
+// Used to determine the max depth of the Minimax tree used by Bot 1 and 2
 #define MAX_DEPTH 4 
+
+// Used to determine the max distance to nearby pieces when calling CountNeighbours in Minimax
+#define MAX_DIST 2
 
 /*
 Author: Feras Albaroudi
@@ -469,7 +472,7 @@ void GetValidMoves(int board[MAX_SIZE][MAX_SIZE], int size, char sides[MAX_SIZE*
 
 // Counts how many of the tokens around a given piece are from the given player's side,
 // the other player's side, as well as how many of the nearby positions are empty spaces on the board
-void CountNeighbours(int board[MAX_SIZE][MAX_SIZE], int size, int player, int x, int y, 
+void CountNeighbours(int board[MAX_SIZE][MAX_SIZE], int size, int player, int x, int y, int dist, 
 					int *playerTokens, int *opponentTokens, int *emptySpaces) {
 
 	*playerTokens = 0;
@@ -477,14 +480,14 @@ void CountNeighbours(int board[MAX_SIZE][MAX_SIZE], int size, int player, int x,
 	*emptySpaces = 0;
 	int val = -1;
 
-	for (int row = x-1; row <= x+1; row++) {
+	for (int row = x-dist; row <= x+dist; row++) {
 
 		// Ignore rows that are out of array bounds
 		if (row < 0 || row > size - 1) {
 			continue;
 		}
 
-		for (int col = y-1; col <= y+1; col++) {
+		for (int col = y-dist; col <= y+dist; col++) {
 
 			// Ignore cols that are out of array bounds or equal to the given x and y positions
 			if (col < 0 || col > size - 1 || (row == x && col == y)) {
@@ -548,7 +551,7 @@ int Minimax(int board[MAX_SIZE][MAX_SIZE], int size, int player, char side, int 
 
 	if (depth == 1 && bestRating == 0) {
 		// Number of this player's nearby tokens as well as empty spaces
-		CountNeighbours(board, size, player, row, col, &playerTokens, &opponentTokens, &emptySpaces);
+		CountNeighbours(board, size, player, row, col, MAX_DIST, &playerTokens, &opponentTokens, &emptySpaces);
 		bestRating = playerTokens + emptySpaces;
 		if (!rootPlayer) {
 			bestRating *= -1;
@@ -587,10 +590,9 @@ void GetMoveBot1(int board[MAX_SIZE][MAX_SIZE], int size, int player, char *side
 
 	// The move we play will be the move with the highest rating. If there's
 	// multiple options with the same score, we just pick the first one.
-	*move = moves[pos];
 	*side = sides[pos];
+	*move = moves[pos];
 
-	printf("--\nBot%d plays %c%d with rating %d\n--\n", player, *side, *move, max);
 }
 
 void GetMoveBot2(int board[MAX_SIZE][MAX_SIZE], int size, int player, char *side, int *move)
