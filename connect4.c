@@ -272,22 +272,22 @@ int CheckGameOver(int board[MAX_SIZE][MAX_SIZE], int size, int player, int row, 
 	for (dir = 0; dir < 4; dir++) {
 		
 		// Set the start and stop positions for the search
-		if (dir == 0) { // Search from mid-left to mid-right
+		if (dir == 0) { // Horizontal search from mid-left to mid-right
 			start.row = row;
 			start.col = col - offset;
 			stop.row = row;
 			stop.col = col + offset;
-		} else if (dir == 1) { // Search from mid-top to mid-bottom
+		} else if (dir == 1) { // Vertical search earch from mid-top to mid-bottom
 			start.row = row - offset;
 			start.col = col;
 			stop.row = row + offset;
 			stop.col = col;
-		} else if (dir == 2) { // Search from top-left to bottom-right
+		} else if (dir == 2) { // Diagonal search from top-left to bottom-right 
 			start.row = row - offset;
 			start.col = col - offset;
 			stop.row = row + offset;
 			stop.col = col + offset;
-		} else { // Search from bottom-left to top-right
+		} else { // Diagonal search from bottom-left to top-right
 			start.row = row + offset;
 			start.col = col - offset;
 			stop.row = row - offset;
@@ -464,39 +464,66 @@ void GetValidMoves(int board[MAX_SIZE][MAX_SIZE], int size, char sides[MAX_SIZE*
 
 }
 
+// Counts how many of the nearby pieces are from the given player's side
+int CountNeighbours(int board[MAX_SIZE][MAX_SIZE], int size, int player, int x, int y) {
+
+	int count = -1;
+
+	for (int row = x-1; row <= x+1; row++) {
+
+		if (row < 0 || row > size - 1) {
+			continue;
+		}
+
+		for (int col = y-1; col <= y+1; col++) {
+			if (col < 0 || col > size - 1) {
+				continue;
+			}
+
+			if (board[row][col] == player) {
+				count++;
+			}
+		}
+	}
+
+	return count;
+}
+
 int Minimax(int board[MAX_SIZE][MAX_SIZE], int size, int player, char side, int move, int depth, int rootPlayer) {
 	
 	int i, length, row, col, outcome;
 	int rating = 0;
-	int bestRating = INT_MIN;
+	int bestRating = 0;
 	int moves[MAX_SIZE*4];
 	char sides[MAX_SIZE*4];
 	
-
 	// Add the given move to the board and then check the game's state
 	AddMoveToBoard(board, size, side, move, player, &row, &col);
 	outcome = CheckGameOver(board, size, player, row, col);
 
 	// We keep calling Minimax until there's a change in the games state or we reach the max tree depth
 	if (outcome != 0) {
-		board[row][col] = 0;
-		if (outcome == rootPlayer) {		
-			return 10 + (MAX_DEPTH - depth);
-		} else {
-			return -10 - (MAX_DEPTH - depth);
+		rating = 10 + (MAX_DEPTH - depth);
+		if (!rootPlayer) {
+			rating *= -1;
 		}
-	} else if (depth == MAX_DEPTH) { 
 		board[row][col] = 0;
-		return 0;
+		return rating;
+	} else if (depth >= MAX_DEPTH) { 
+		rating = CountNeighbours(board, size, player, row, col);	
+		if (!rootPlayer) {
+			rating *= -1;
+		}
+		board[row][col] = 0;
+		return rating;
 	}
 
 	GetValidMoves(board, size, sides, moves, &length);
 	
 	// Call Minimax for the other player for each valid move on the board
 	for (i = 0; i < length; i++) {
-		rating = Minimax(board, size, 3 - player, sides[i], moves[i], depth+1, rootPlayer);
-		
-		if (player == rootPlayer) {
+		rating = Minimax(board, size, 3 - player, sides[i], moves[i], depth+1, !rootPlayer);
+		if (rootPlayer) {
 			if (rating < bestRating) {
 				bestRating = rating;
 			}
@@ -530,7 +557,7 @@ void GetMoveBot1(int board[MAX_SIZE][MAX_SIZE], int size, int player, char *side
 
 	// Find the move with the highest rating for this player
 	for (i = 0; i < length; i++) {
-		rating = Minimax(board, size, player, sides[i], moves[i], depth+1, player);
+		rating = Minimax(board, size, player, sides[i], moves[i], depth+1, 1);
 		if (rating >= max) {
 			max = rating;
 			pos = i;
