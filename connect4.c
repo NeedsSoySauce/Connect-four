@@ -156,7 +156,6 @@ void RemoveSpaces(char *name)
 
 			// If the character we swapped was the null terminator
 			// then we're done
-
 			if (name[j] == '\0') {
 				return;
 			} else {
@@ -468,34 +467,46 @@ void GetValidMoves(int board[MAX_SIZE][MAX_SIZE], int size, char sides[MAX_SIZE*
 
 }
 
-// Counts how many of the tokens areound a given piece are from the given player's side
-int CountNeighbours(int board[MAX_SIZE][MAX_SIZE], int size, int player, int x, int y) {
+// Counts how many of the tokens around a given piece are from the given player's side,
+// the other player's side, as well as how many of the nearby positions are empty spaces on the board
+void CountNeighbours(int board[MAX_SIZE][MAX_SIZE], int size, int player, int x, int y, 
+					int *playerTokens, int *opponentTokens, int *emptySpaces) {
 
-	int count = 0;
+	*playerTokens = 0;
+	*opponentTokens = 0;
+	*emptySpaces = 0;
+	int val = -1;
 
 	for (int row = x-1; row <= x+1; row++) {
 
-		if (row == x || row < 0 || row > size - 1) {
+		// Ignore rows that are out of array bounds
+		if (row < 0 || row > size - 1) {
 			continue;
 		}
 
 		for (int col = y-1; col <= y+1; col++) {
-			if (col == y || col < 0 || col > size - 1) {
+
+			// Ignore cols that are out of array bounds or equal to the given x and y positions
+			if (col < 0 || col > size - 1 || (row == x && col == y)) {
 				continue;
 			}
 
-			if (board[row][col] == player) {
-				count++;
-			}
-		}
-	}
+			val = board[row][col];
 
-	return count;
+			if (val == player) {
+				*playerTokens += 1;
+			} else if (val == 3 - player) {
+				*opponentTokens += 1;
+			} else if (val == 0) {
+				*emptySpaces += 1;
+			}
+		}	
+	}
 }
 
 int Minimax(int board[MAX_SIZE][MAX_SIZE], int size, int player, char side, int move, int depth, int rootPlayer) {
 	
-	int i, length, row, col, outcome, rating, bestRating;
+	int i, length, row, col, outcome, rating, bestRating, playerTokens, opponentTokens, emptySpaces;
 	int moves[MAX_SIZE*4];
 	char sides[MAX_SIZE*4];
 	
@@ -512,10 +523,6 @@ int Minimax(int board[MAX_SIZE][MAX_SIZE], int size, int player, char side, int 
 		board[row][col] = 0;
 		return rating;
 	} else if (depth >= MAX_DEPTH) { 
-		// rating = CountNeighbours(board, size, player, row, col);	
-		// if (!rootPlayer) {
-		// 	rating *= -1;
-		// }
 		board[row][col] = 0;
 		return 0;
 	}
@@ -536,6 +543,15 @@ int Minimax(int board[MAX_SIZE][MAX_SIZE], int size, int player, char side, int 
 			if (rating > bestRating) {
 				bestRating = rating;
 			}
+		}
+	}
+
+	if (depth == 1 && bestRating == 0) {
+		// Number of this player's nearby tokens as well as empty spaces
+		CountNeighbours(board, size, player, row, col, &playerTokens, &opponentTokens, &emptySpaces);
+		bestRating = playerTokens + emptySpaces;
+		if (!rootPlayer) {
+			bestRating *= -1;
 		}
 	}
 
@@ -563,9 +579,6 @@ void GetMoveBot1(int board[MAX_SIZE][MAX_SIZE], int size, int player, char *side
 	// then use this information to pick the move that has the highest rating 
 	for (i = 1; i < length; i++) {
 		rating = Minimax(board, size, player, sides[i], moves[i], depth+1, 1);
-		if ((sides[i] == 'W' && moves[i] == 6) || (sides[i] == 'E' && moves[i] == 2)) {
-			printf("%c%d = %d\n", sides[i], moves[i], rating);
-		}
 		if (rating >= max) {
 			max = rating;
 			pos = i;

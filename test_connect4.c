@@ -12,7 +12,8 @@ the project handout.
 */
 void MyTestFunction(void);
 void PlayConnectFour(void);
-int CountNeighbours(int board[MAX_SIZE][MAX_SIZE], int size, int player, int x, int y);
+void CountNeighbours(int board[MAX_SIZE][MAX_SIZE], int size, int player, int x, int y, 
+					int *playerTokens, int *opponentTokens, int *emptySpaces);
 
 /*
 This function is where you can write your own test code, to test the functions that you
@@ -297,37 +298,41 @@ void MyTestFunction(void)
 	hasWon = CheckGameOver(board8, size8, 1, rowPos, colPos);
 	printf("   Result = %d\n", hasWon);
 
-	// Check bottom-left to top-right diagonal victory
-	printf("\n--------> CHECKING FOR bot counter diagonal\n");
-	size8 = 10;
-	InitialiseBoard(board8, size8);
-	AddMoveToBoard(board8, size8, 'N', 1, 2, &rowPos, &colPos);
-	AddMoveToBoard(board8, size8, 'N', 2, 2, &rowPos, &colPos);
-	AddMoveToBoard(board8, size8, 'N', 2, 2, &rowPos, &colPos);
-	AddMoveToBoard(board8, size8, 'N', 3, 2, &rowPos, &colPos);
-	AddMoveToBoard(board8, size8, 'N', 3, 2, &rowPos, &colPos);
-	AddMoveToBoard(board8, size8, 'N', 3, 2, &rowPos, &colPos);
+	int checkBot = 0;
 
-	AddMoveToBoard(board8, size8, 'N', 0, 1, &rowPos, &colPos);
-	AddMoveToBoard(board8, size8, 'N', 1, 1, &rowPos, &colPos);
-	AddMoveToBoard(board8, size8, 'N', 2, 1, &rowPos, &colPos);
+	if (checkBot) {
+		// Check bottom-left to top-right diagonal victory
+		printf("\n--------> CHECKING FOR bot counter diagonal\n");
+		size8 = 10;
+		InitialiseBoard(board8, size8);
+		AddMoveToBoard(board8, size8, 'N', 1, 2, &rowPos, &colPos);
+		AddMoveToBoard(board8, size8, 'N', 2, 2, &rowPos, &colPos);
+		AddMoveToBoard(board8, size8, 'N', 2, 2, &rowPos, &colPos);
+		AddMoveToBoard(board8, size8, 'N', 3, 2, &rowPos, &colPos);
+		AddMoveToBoard(board8, size8, 'N', 3, 2, &rowPos, &colPos);
+		AddMoveToBoard(board8, size8, 'N', 3, 2, &rowPos, &colPos);
 
-	char side;
-	int move;
+		AddMoveToBoard(board8, size8, 'N', 0, 1, &rowPos, &colPos);
+		AddMoveToBoard(board8, size8, 'N', 1, 1, &rowPos, &colPos);
+		AddMoveToBoard(board8, size8, 'N', 2, 1, &rowPos, &colPos);
 
-	GetMoveBot1(board8, size8, 1, &side, &move);
-	AddMoveToBoard(board8, size8, side, move, 1, &rowPos, &colPos);
-	
-	for (int i = 0; i < size8; i++) {
-		printf("   ");
-		for (int j = 0; j < size8; j++) {
-			printf("%d ", board8[i][j]);
+		char side;
+		int move;
+
+		GetMoveBot1(board8, size8, 1, &side, &move);
+		AddMoveToBoard(board8, size8, side, move, 1, &rowPos, &colPos);
+		
+		for (int i = 0; i < size8; i++) {
+			printf("   ");
+			for (int j = 0; j < size8; j++) {
+				printf("%d ", board8[i][j]);
+			}
+			printf("\n");
 		}
-		printf("\n");
+		printf("   Checking for win for Bot 1 in [%d, %d]\n", rowPos, colPos);
+		hasWon = CheckGameOver(board8, size8, 1, rowPos, colPos);
+		printf("   Result = %d\n", hasWon);
 	}
-	printf("   Checking for win for Bot 1 in [%d, %d]\n", rowPos, colPos);
-	hasWon = CheckGameOver(board8, size8, 1, rowPos, colPos);
-	printf("   Result = %d\n", hasWon);
 
 	// Checking CountNeighbours
 	printf("\n--------> CHECKING CountNeighbours\n");
@@ -345,9 +350,9 @@ void MyTestFunction(void)
 		}
 		printf("\n");
 	}
-	
-	int neighbours = CountNeighbours(board8, size8, 1, rowPos, colPos);
-	printf("Neighbours for (%d, %d) = %d\n", rowPos, colPos, neighbours);
+	int playerTokens, opponentTokens, emptySpaces;
+	CountNeighbours(board8, size8, 1, rowPos, colPos, &playerTokens, &opponentTokens, &emptySpaces);
+	printf("Neighbours for (%d, %d):\n%d friendly\n%d opponent\n%d empty\n", rowPos, colPos, playerTokens, opponentTokens, emptySpaces);
 
 	printf("REMEMBER TO REMOVE THE RETURN BENEATH THIS\n");
 	return;
