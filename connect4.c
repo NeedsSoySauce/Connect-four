@@ -3,14 +3,18 @@
 
 #include "connect4.h"
 
-#define SEQ_LEN 4
+// Ever felt like playing connect 5? Now you can!
+#define SEQ_LEN 4 
+
+// These affect the appearance of the board
 #define TOKEN1 'X'
 #define TOKEN2 'O'
 #define FIXED '#'
 #define SPACE '.'
 #define BORDER '-'
 
-#define MAX_DEPTH 5
+// Used determine the max depth of the Minimax tree used by Bot 1 and 2
+#define MAX_DEPTH 4 
 
 /*
 Author: Feras Albaroudi
@@ -464,19 +468,19 @@ void GetValidMoves(int board[MAX_SIZE][MAX_SIZE], int size, char sides[MAX_SIZE*
 
 }
 
-// Counts how many of the nearby pieces are from the given player's side
+// Counts how many of the tokens areound a given piece are from the given player's side
 int CountNeighbours(int board[MAX_SIZE][MAX_SIZE], int size, int player, int x, int y) {
 
-	int count = -1;
+	int count = 0;
 
 	for (int row = x-1; row <= x+1; row++) {
 
-		if (row < 0 || row > size - 1) {
+		if (row == x || row < 0 || row > size - 1) {
 			continue;
 		}
 
 		for (int col = y-1; col <= y+1; col++) {
-			if (col < 0 || col > size - 1) {
+			if (col == y || col < 0 || col > size - 1) {
 				continue;
 			}
 
@@ -491,9 +495,7 @@ int CountNeighbours(int board[MAX_SIZE][MAX_SIZE], int size, int player, int x, 
 
 int Minimax(int board[MAX_SIZE][MAX_SIZE], int size, int player, char side, int move, int depth, int rootPlayer) {
 	
-	int i, length, row, col, outcome;
-	int rating = 0;
-	int bestRating = 0;
+	int i, length, row, col, outcome, rating, bestRating;
 	int moves[MAX_SIZE*4];
 	char sides[MAX_SIZE*4];
 	
@@ -501,7 +503,7 @@ int Minimax(int board[MAX_SIZE][MAX_SIZE], int size, int player, char side, int 
 	AddMoveToBoard(board, size, side, move, player, &row, &col);
 	outcome = CheckGameOver(board, size, player, row, col);
 
-	// We keep calling Minimax until there's a change in the games state or we reach the max tree depth
+	// We perform an evaluation if there's a change in the game's state or we reach the max tree depth
 	if (outcome != 0) {
 		rating = 10 + (MAX_DEPTH - depth);
 		if (!rootPlayer) {
@@ -510,18 +512,21 @@ int Minimax(int board[MAX_SIZE][MAX_SIZE], int size, int player, char side, int 
 		board[row][col] = 0;
 		return rating;
 	} else if (depth >= MAX_DEPTH) { 
-		rating = CountNeighbours(board, size, player, row, col);	
-		if (!rootPlayer) {
-			rating *= -1;
-		}
+		// rating = CountNeighbours(board, size, player, row, col);	
+		// if (!rootPlayer) {
+		// 	rating *= -1;
+		// }
 		board[row][col] = 0;
-		return rating;
+		return 0;
 	}
 
+	// If we get here then we haven't reached the max tree depth and the game's state hasn't changed
+	// so we call Minimax for all possible moves based on the current board state
 	GetValidMoves(board, size, sides, moves, &length);
+	bestRating = Minimax(board, size, 3 - player, sides[0], moves[0], depth+1, !rootPlayer);
 	
 	// Call Minimax for the other player for each valid move on the board
-	for (i = 0; i < length; i++) {
+	for (i = 1; i < length; i++) {
 		rating = Minimax(board, size, 3 - player, sides[i], moves[i], depth+1, !rootPlayer);
 		if (rootPlayer) {
 			if (rating < bestRating) {
@@ -550,14 +555,17 @@ void GetMoveBot1(int board[MAX_SIZE][MAX_SIZE], int size, int player, char *side
 	int moves[MAX_SIZE*4];
 	char sides[MAX_SIZE*4];
 	
-	printf("Bot%d move\n", player);
-
 	// Initially we grab all the valid moves based on the board's current state
 	GetValidMoves(board, size, sides, moves, &length);
+	max = Minimax(board, size, player, sides[0], moves[0], depth+1, 1);
 
-	// Find the move with the highest rating for this player
-	for (i = 0; i < length; i++) {
+	// We start off by calling Minimax on all possible movies this player could make and
+	// then use this information to pick the move that has the highest rating 
+	for (i = 1; i < length; i++) {
 		rating = Minimax(board, size, player, sides[i], moves[i], depth+1, 1);
+		if ((sides[i] == 'W' && moves[i] == 6) || (sides[i] == 'E' && moves[i] == 2)) {
+			printf("%c%d = %d\n", sides[i], moves[i], rating);
+		}
 		if (rating >= max) {
 			max = rating;
 			pos = i;
@@ -569,8 +577,7 @@ void GetMoveBot1(int board[MAX_SIZE][MAX_SIZE], int size, int player, char *side
 	*move = moves[pos];
 	*side = sides[pos];
 
-	printf("Bot%d max = %d\n", player, max);
-	printf("Bot%d plays %c%d with rating %d\n", player, *side, *move, max);
+	printf("--\nBot%d plays %c%d with rating %d\n--\n", player, *side, *move, max);
 }
 
 void GetMoveBot2(int board[MAX_SIZE][MAX_SIZE], int size, int player, char *side, int *move)
