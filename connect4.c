@@ -56,7 +56,8 @@ int SecondPlacePrize(int prize1, int prize2, int prize3)
 	prizes[0] = prize1;
 	prizes[1] = prize2;
 	prizes[2] = prize3;
-
+	
+	// Sort prizes in order from smallest to largest
 	qsort(prizes, 3, sizeof(int), cmpInt);
 
 	return prizes[1];
@@ -149,6 +150,7 @@ void RemoveSpaces(char *name)
 {
 	int i = 0;
 	while (name[i] != '\0') {
+		// If we encounter two spaces in a row we remove one of them
 		if (name[i] == ' ' && name[i+1] == ' ') {
 			RemoveCharacter(name, i);
 		} else {
