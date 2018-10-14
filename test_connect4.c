@@ -14,6 +14,7 @@ void MyTestFunction(void);
 void PlayConnectFour(void);
 void CountNeighbours(int board[MAX_SIZE][MAX_SIZE], int size, int player, int x, int y, int dist,
 					int *playerTokens, int *opponentTokens, int *emptySpaces);
+void GetValidMoves(int board[MAX_SIZE][MAX_SIZE], int size, char sides[MAX_SIZE*4], int moves[MAX_SIZE*4], int *length);
 
 /*
 This function is where you can write your own test code, to test the functions that you
@@ -320,6 +321,38 @@ void TestBot(void) {
 	passes += (hasWon == 1 ? 1 : 0);
 	tests++;
 
+	// ---------------> Checking that the bot will take a victory the opponent has multiple ways to win
+	printf("\n--------> Checking that the bot will take a victory the opponent has multiple ways to win\n");
+	size = 10;
+	InitialiseBoard(board, size);
+
+	AddMoveToBoard(board, size, 'E', 1, 2, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'E', 2, 2, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'E', 3, 2, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'E', 1, 2, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'E', 2, 2, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'E', 3, 2, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'N', 6, 2, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'N', 7, 2, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'S', 4, 2, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'S', 5, 2, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'E', 6, 2, &rowPos, &colPos);
+
+	AddMoveToBoard(board, size, 'W', 4, 1, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'W', 5, 1, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'N', 3, 1, &rowPos, &colPos);
+
+	GetMoveBot1(board, size, 1, &side, &move);
+	AddMoveToBoard(board, size, side, move, 1, &rowPos, &colPos);
+	
+	PrintBoard(board, size);
+
+	printf("   Checking for win for Bot 1 in [%d, %d]\n", rowPos, colPos);
+	hasWon = CheckGameOver(board, size, 1, rowPos, colPos);
+	printf("   Result = %d\n", hasWon);
+	passes += (hasWon == 1 ? 1 : 0);
+	tests++;
+
 	// -------------------------------------------------------
 	// ---------- UNEVEN BOARD TESTS START HERE -------------- 
 	// -------------------------------------------------------
@@ -562,6 +595,53 @@ void TestBot(void) {
 
 	printf("------> Bot 1 passed %d/%d tests\n", passes, tests);
 	
+}
+
+void TestValidMoves(void) {
+
+	int board[MAX_SIZE][MAX_SIZE], i;
+	int length, size, moves[MAX_SIZE*4], rowPos, colPos;
+	char sides[MAX_SIZE*4];
+	time_t t;
+
+	int passes = 0;
+	int tests = 0;
+
+	printf("\n----- > Checking that all moves are valid for board sizes 4 - 10\n");
+	for (size = 4; size <= 10; size++) {	
+		passes = 0;
+		tests = 0;	
+		InitialiseBoard(board, size);
+		GetValidMoves(board, size, sides, moves, &length);
+		tests = length;
+		for (i = 0; i < length; i++) {
+			// printf("Playing %c%d\n", sides[i], moves[i]);
+			AddMoveToBoard(board, size, sides[i], moves[i], 1, &rowPos, &colPos);
+			passes += ((rowPos != -1 && colPos != -1) ? 1 : 0);
+			// PrintBoard(board, size);
+			board[rowPos][colPos] = 0;
+		}
+		printf("------> Valid Moves at size %d: %d/%d \t= %s\n", size, passes, tests, (passes == tests ? "PASS" : "FAIL"));
+	}
+
+	printf("\n----- > Checking that all board sizes can be filled until there are no valid moves without any errors\n");
+	for (size = 4; size <= 10; size++) {	
+		passes = 0;
+		length = 100;
+		InitialiseBoard(board, size);
+		srand((unsigned) time(&t));
+		while (length > 2) {
+			GetValidMoves(board, size, sides, moves, &length);
+			i = rand() % length;
+			AddMoveToBoard(board, size, sides[i], moves[i], 1, &rowPos, &colPos);
+			if (rowPos == -1 || colPos == -1) {
+				printf("Stopped due to invalid move after %d moves\n", passes);
+				break;
+			}
+			passes += ((rowPos != -1 && colPos != -1) ? 1 : 0);
+		}
+		printf("------> 'Filled' size %d after %d moves\n", size, passes);
+	}
 }
 
 void MyTestFunction(void)
@@ -965,6 +1045,8 @@ int main(void)
 	printf("      [User defined test]\n");
 	printf("  3 = Test Bot\n");
 	printf("      [Test Bot 1 to verify it's making the expected move in different scenarios]\n");
+	printf("  4 = Test Valid Moves\n");
+	printf("      [Test that all moves for a given board size are valid]\n");
 	printf("\nPlease enter your choice:  ");
 	scanf("%d", &input);
 	if (input == 0) {
@@ -973,8 +1055,10 @@ int main(void)
 		PlayConnectFour();
 	} else if (input == 2) {
 		CustomTest();
-	} else { 
+	} else if (input == 3) { 
 		TestBot();
+	} else if (input == 4) { 
+		TestValidMoves();
 	}
 
 	return 0;
