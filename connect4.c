@@ -1,6 +1,12 @@
 /* ENGGEN131 Project - C Project - 2018 */
 /* Connect Four */
 
+/*
+Author: Feras Albaroudi
+StudentID: 606316303
+*/
+
+
 #include "connect4.h"
 
 // Ever felt like playing connect 5? Now you can!
@@ -13,16 +19,19 @@
 #define SPACE '.'
 #define BORDER '-'
 
-// Used to determine the max depth of the Minimax tree used by Bot 1 and 2
-#define MAX_DEPTH 4 
+// Used to determine the max depth of the Minimax tree used by Bot 1 and 2.
+// The bot will NOT play properly if this is less than 2 (so don't set it less than 2!).
+// Higher values will result in the bot playing better but taking significantly longer to make its move.
+#define MAX_DEPTH 4
 
 // Used to determine the max distance to nearby pieces when calling CountNeighbours in Minimax
-#define MAX_DIST 2
+#define MAX_DIST 1
 
-/*
-Author: Feras Albaroudi
-StudentID: 606316303
-*/
+// These control how the bot rates moves
+#define VICTORY_VAL 100000 // This must be a value large enough to outweight any other option
+#define FRIENDLY_TOKEN_VAL 3
+#define OPPONENT_TOKEN_VAL 1
+#define EMPTY_SPACE_VAL 2
 
 typedef struct Point {
 	int row, col;
@@ -52,7 +61,7 @@ int SecondPlacePrize(int prize1, int prize2, int prize3)
 	return second;
 }
 
-// Determines the starting index of the first consecutive sequence of the same value
+// Determines the starting index of the first consecutive sequence of the same value.
 // If no such sequence exists, returns -1
 int FourInARow(int values[], int length)
 {
@@ -470,10 +479,10 @@ void GetValidMoves(int board[MAX_SIZE][MAX_SIZE], int size, char sides[MAX_SIZE*
 
 }
 
-// Counts how many of the tokens around a given piece are from the given player's side,
+// Counts how many of the tokens around a given piece are from the given player's side and
 // the other player's side, as well as how many of the nearby positions are empty spaces on the board
 void CountNeighbours(int board[MAX_SIZE][MAX_SIZE], int size, int player, int x, int y, int dist, 
-					int *playerTokens, int *opponentTokens, int *emptySpaces) {
+					 int *playerTokens, int *opponentTokens, int *emptySpaces) {
 
 	*playerTokens = 0;
 	*opponentTokens = 0;
@@ -489,7 +498,8 @@ void CountNeighbours(int board[MAX_SIZE][MAX_SIZE], int size, int player, int x,
 
 		for (int col = y-dist; col <= y+dist; col++) {
 
-			// Ignore cols that are out of array bounds or equal to the given x and y positions
+			// Ignore cols that are out of array bounds or positions that are equal 
+			// to the given x and y positions
 			if (col < 0 || col > size - 1 || (row == x && col == y)) {
 				continue;
 			}
@@ -519,7 +529,7 @@ int Minimax(int board[MAX_SIZE][MAX_SIZE], int size, int player, char side, int 
 
 	// We perform an evaluation if there's a change in the game's state or we reach the max tree depth
 	if (outcome != 0) {
-		rating = 10 + (MAX_DEPTH - depth);
+		rating = VICTORY_VAL + (MAX_DEPTH - depth);
 		if (!rootPlayer) {
 			rating *= -1;
 		}
@@ -552,7 +562,7 @@ int Minimax(int board[MAX_SIZE][MAX_SIZE], int size, int player, char side, int 
 	if (depth == 1 && bestRating == 0) {
 		// Number of this player's nearby tokens as well as empty spaces
 		CountNeighbours(board, size, player, row, col, MAX_DIST, &playerTokens, &opponentTokens, &emptySpaces);
-		bestRating = playerTokens + emptySpaces;
+		bestRating = FRIENDLY_TOKEN_VAL* playerTokens + OPPONENT_TOKEN_VAL * opponentTokens + EMPTY_SPACE_VAL * emptySpaces;
 		if (!rootPlayer) {
 			bestRating *= -1;
 		}
@@ -592,6 +602,8 @@ void GetMoveBot1(int board[MAX_SIZE][MAX_SIZE], int size, int player, char *side
 	// multiple options with the same score, we just pick the first one.
 	*side = sides[pos];
 	*move = moves[pos];
+
+	printf("Bot %d plays %c%d with rating %d\n", player, *side, *move, max);
 
 }
 
