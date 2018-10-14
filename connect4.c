@@ -33,32 +33,33 @@ StudentID: 606316303
 #define OPPONENT_TOKEN_VAL 1
 #define EMPTY_SPACE_VAL 2
 
+// These are used for alpha-beta pruning. There is no need to change these.
+#define POS_INF (1 << (sizeof(int)*8-1)) - 1 // Idea from https://stackoverflow.com/questions/1855459/maximum-value-of-int
+#define NEG_INF INT_MAX * -1 - 1
+
 typedef struct Point {
 	int row, col;
 } Pt;
 
+// Compares a and b and returns:
+// A value greater than 0 if a > b
+// 0 if a == b
+// A value less than 0 if a < b
+int cmpInt(const void *a, const void *b) {
+	return (*(int*)a - *(int*)b);
+}
+
 // Determines the second largest value of the three input values
 int SecondPlacePrize(int prize1, int prize2, int prize3)
 {
+	int prizes[3];
+	prizes[0] = prize1;
+	prizes[1] = prize2;
+	prizes[2] = prize3;
 
-	int max = prize1;
-	int second = prize1;
+	qsort(prizes, 3, sizeof(int), cmpInt);
 
-	if (prize2 > max) {
-		second = max;
-		max = prize2;		
-	} else if (prize2 > second) {
-		second = prize2;
-	}
-
-	if (prize3 > max) {
-		second = max;
-		max = prize3;
-	} else if (prize3 > second) {
-		second = prize3;
-	}
-
-	return second;
+	return prizes[1];
 }
 
 // Determines the starting index of the first consecutive sequence of the same value.
@@ -111,7 +112,7 @@ int BinaryToDecimal(int binary)
 // 1 if a > b
 // 0 if a == b
 // -1 if a < b
-int comparator(const void *a, const void *b) {
+int cmpDouble(const void *a, const void *b) {
 	double diff = (*(double*)a - *(double*)b) ;
 	return (diff > 0 ? 1 : diff < 0 ? -1 : 0);
 }
@@ -121,7 +122,7 @@ double MedianAbility(double abilities[], int length)
 {
 	
 	// Sort the array into ascending order
-	qsort(abilities, length, sizeof(double), comparator);
+	qsort(abilities, length, sizeof(double), cmpDouble);
 	int mid = length / 2;
 
 	// If the array is even the median value is the middle-most value in the array,
@@ -133,50 +134,26 @@ double MedianAbility(double abilities[], int length)
 	}
 }
 
+// Removes the character at the index pos from a given character array
+void RemoveCharacter(char *name, int pos) {
+	int i = pos;
+	while (name[i] != '\0') {
+		name[i] = name[i+1];
+		i++;
+	}
+}
+
 // Removes excess spaces in a string by reducing any sequence of spaces in a string 
 // greater than 1 to a single space.
 void RemoveSpaces(char *name)
 {
-	int i = 0; // i is our 'write' position and always records the position we're writing to
-	int j = 0; // j is our 'swap' postion and always records the position wrapping a value to/from
-
+	int i = 0;
 	while (name[i] != '\0') {
-
-		// If this character isn't a space then we don't need to do anything
-		if (name[i] != ' ') {
-			i++;
-			continue;
-		}
-
-		// If we've encountered a space shift our index right by 1 
-		// to keep a single space
-		if (name[i] == ' ') { 
+		if (name[i] == ' ' && name[i+1] == ' ') {
+			RemoveCharacter(name, i);
+		} else {
 			i++;
 		}
-
-		j = i;
-
-		// Shift j to the next non-space character
-		while (name[j] == ' ') {
-			j++;
-		}
-
-		// Keep swapping characters until we encounter another space
-		while (name[j] != ' ') {
-			
-			name[i] = name[j];
-
-			// If the character we swapped was the null terminator
-			// then we're done
-			if (name[j] == '\0') {
-				return;
-			} else {
-				name[j] = ' ';
-			}
-			
-			i++;
-			j++;
-		} 
 	}
 }
 
@@ -242,7 +219,6 @@ void AddMoveToBoard(int board[MAX_SIZE][MAX_SIZE], int size, char side, int move
 			break;
 		default :
 			return; // Invalid side so we do nothing
-
 	}
 
 	// Check if the move is invalid
@@ -254,7 +230,8 @@ void AddMoveToBoard(int board[MAX_SIZE][MAX_SIZE], int size, char side, int move
 
 	// Keep "moving" the piece until it hits something while ensuring 
 	// we don't read anything that's out of bounds of the array
-	while (row+rowVel >= 0 && col+colVel >= 0 && row+rowVel < size && col+colVel < size && board[row+rowVel][col+colVel] == 0) {
+	while (row+rowVel >= 0 && col+colVel >= 0 && row+rowVel < size && 
+		   col+colVel < size && board[row+rowVel][col+colVel] == 0) {
 		row += rowVel;
 		col += colVel;
 	}
@@ -603,7 +580,7 @@ void GetMoveBot1(int board[MAX_SIZE][MAX_SIZE], int size, int player, char *side
 	*side = sides[pos];
 	*move = moves[pos];
 
-	printf("Bot %d plays %c%d with rating %d\n", player, *side, *move, max);
+	// printf("Bot %d plays %c%d with rating %d\n", player, *side, *move, max);
 
 }
 

@@ -28,16 +28,558 @@ void PrintBoard(int board[MAX_SIZE][MAX_SIZE], int size) {
 	printf("%s", boardString);
 }
 
+void CustomTest(void) {
+
+	int board[MAX_SIZE][MAX_SIZE];
+	int hasWon, size, move, rowPos, colPos;
+	char side;
+
+	// ---------------> Checking that the bot will pick a valid move when there's only one available (only S2 and S3 are available)
+	printf("\n--------> Checking that the bot will pick a valid move when there's only one available (only S2 and S3 are available)\n");
+	size = 4;
+	InitialiseBoard(board, size);
+	AddMoveToBoard(board, size, 'N', 0, 2, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'N', 0, 1, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'N', 0, 2, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'N', 0, 1, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'E', 0, 2, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'E', 0, 1, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'E', 0, 2, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'S', 3, 1, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'S', 3, 2, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'S', 1, 2, &rowPos, &colPos);
+
+	GetMoveBot1(board, size, 1, &side, &move);
+	AddMoveToBoard(board, size, side, move, 1, &rowPos, &colPos);
+	
+	PrintBoard(board, size);
+
+	printf("   Checking for win for Bot 1 in [%d, %d]\n", rowPos, colPos);
+	hasWon = CheckGameOver(board, size, 1, rowPos, colPos);
+	printf("   Result = %d\n", hasWon);
+}
+
+void TestBot(void) {
+
+	int board[MAX_SIZE][MAX_SIZE];
+	int hasWon, size, move, rowPos, colPos;
+	char side;
+
+	int passes = 0;
+	int tests = 0;
+
+	// ---------------> Check Horizontal victory
+	printf("\n--------> Check Horizontal victory\n");
+	size = 10;
+	InitialiseBoard(board, size);
+	AddMoveToBoard(board, size, 'N', 0, 1, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'N', 1, 1, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'N', 2, 1, &rowPos, &colPos);
+
+	GetMoveBot1(board, size, 1, &side, &move);
+	AddMoveToBoard(board, size, side, move, 1, &rowPos, &colPos);
+	
+	PrintBoard(board, size);
+
+	printf("   Checking for win for Bot 1 in [%d, %d]\n", rowPos, colPos);
+	hasWon = CheckGameOver(board, size, 1, rowPos, colPos);
+	printf("   Result = %d\n", hasWon);
+	passes += (hasWon == 1 ? 1 : 0);
+	tests++;
+
+	// ---------------> Check Horizontal in-between victory
+	printf("\n--------> Check Horizontal in-between victory\n");
+	size = 10;
+	InitialiseBoard(board, size);
+	AddMoveToBoard(board, size, 'N', 0, 1, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'N', 1, 1, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'N', 3, 1, &rowPos, &colPos);
+
+	GetMoveBot1(board, size, 1, &side, &move);
+	AddMoveToBoard(board, size, side, move, 1, &rowPos, &colPos);
+	
+	PrintBoard(board, size);
+
+	printf("   Checking for win for Bot 1 in [%d, %d]\n", rowPos, colPos);
+	hasWon = CheckGameOver(board, size, 1, rowPos, colPos);
+	printf("   Result = %d\n", hasWon);
+	passes += (hasWon == 1 ? 1 : 0);
+	tests++;
+
+	// ---------------> Check Vertical victory
+	printf("\n--------> Check Vertical victory\n");
+	size = 10;
+	InitialiseBoard(board, size);
+	AddMoveToBoard(board, size, 'E', 0, 1, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'E', 1, 1, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'E', 2, 1, &rowPos, &colPos);
+
+	GetMoveBot1(board, size, 1, &side, &move);
+	AddMoveToBoard(board, size, side, move, 1, &rowPos, &colPos);
+	
+	PrintBoard(board, size);
+
+	printf("   Checking for win for Bot 1 in [%d, %d]\n", rowPos, colPos);
+	hasWon = CheckGameOver(board, size, 1, rowPos, colPos);
+	printf("   Result = %d\n", hasWon);
+	passes += (hasWon == 1 ? 1 : 0);
+	tests++;
+
+	// ---------------> Check Vertical in-between victory
+	printf("\n--------> Check Vertical in-between victory\n");
+	size = 10;
+	InitialiseBoard(board, size);
+	AddMoveToBoard(board, size, 'E', 0, 1, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'E', 1, 1, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'E', 3, 1, &rowPos, &colPos);
+
+	GetMoveBot1(board, size, 1, &side, &move);
+	AddMoveToBoard(board, size, side, move, 1, &rowPos, &colPos);
+	
+	PrintBoard(board, size);
+
+	printf("   Checking for win for Bot 1 in [%d, %d]\n", rowPos, colPos);
+	hasWon = CheckGameOver(board, size, 1, rowPos, colPos);
+	printf("   Result = %d\n", hasWon);
+	passes += (hasWon == 1 ? 1 : 0);
+	tests++;
+
+	// ---------------> Check bottom-left to top-right diagonal victory
+	printf("\n--------> Check bottom-left to top-right diagonal victory\n");
+	size = 10;
+	InitialiseBoard(board, size);
+	AddMoveToBoard(board, size, 'N', 1, 2, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'N', 2, 2, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'N', 2, 2, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'N', 3, 2, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'N', 3, 2, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'N', 3, 1, &rowPos, &colPos);
+
+	AddMoveToBoard(board, size, 'N', 0, 1, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'N', 1, 1, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'N', 2, 1, &rowPos, &colPos);
+
+	GetMoveBot1(board, size, 1, &side, &move);
+	AddMoveToBoard(board, size, side, move, 1, &rowPos, &colPos);
+	
+	PrintBoard(board, size);
+
+	printf("   Checking for win for Bot 1 in [%d, %d]\n", rowPos, colPos);
+	hasWon = CheckGameOver(board, size, 1, rowPos, colPos);
+	printf("   Result = %d\n", hasWon);
+	passes += (hasWon == 1 ? 1 : 0);
+	tests++;
+	
+
+	// ---------------> Checking that the bot will take an in-between diagonal victory
+	printf("\n--------> Checking that the bot will take an in-between diagonal victory\n");
+	size = 10;
+	InitialiseBoard(board, size);
+	AddMoveToBoard(board, size, 'N', 1, 2, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'N', 2, 2, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'N', 2, 2, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'N', 3, 2, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'N', 3, 2, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'N', 3, 2, &rowPos, &colPos);
+
+	AddMoveToBoard(board, size, 'N', 0, 1, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'N', 1, 1, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'N', 3, 1, &rowPos, &colPos);
+	
+	GetMoveBot1(board, size, 1, &side, &move);
+	AddMoveToBoard(board, size, side, move, 1, &rowPos, &colPos);
+	
+	PrintBoard(board, size);
+
+	printf("   Checking for win for Bot 1 in [%d, %d]\n", rowPos, colPos);
+	hasWon = CheckGameOver(board, size, 1, rowPos, colPos);
+	printf("   Result = %d\n", hasWon);
+	passes += (hasWon == 1 ? 1 : 0);
+	tests++;
+
+	// ---------------> Check top-left to bottom-right diagonal victory
+	printf("\n--------> Check top-left to bottom-right diagonal victory\n");
+	size = 10;
+	InitialiseBoard(board, size);
+	AddMoveToBoard(board, size, 'N', 2, 2, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'N', 1, 2, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'N', 1, 2, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'N', 0, 2, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'N', 0, 2, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'N', 0, 1, &rowPos, &colPos);
+
+	AddMoveToBoard(board, size, 'N', 0, 1, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'N', 1, 1, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'N', 2, 1, &rowPos, &colPos);
+
+	GetMoveBot1(board, size, 1, &side, &move);
+	AddMoveToBoard(board, size, side, move, 1, &rowPos, &colPos);
+	
+	PrintBoard(board, size);
+
+	printf("   Checking for win for Bot 1 in [%d, %d]\n", rowPos, colPos);
+	hasWon = CheckGameOver(board, size, 1, rowPos, colPos);
+	printf("   Result = %d\n", hasWon);
+	passes += (hasWon == 1 ? 1 : 0);
+	tests++;
+
+	// ---------------> Check top-left to bottom-right in-between diagonal victory
+	printf("\n--------> Check top-left to bottom-right in-between diagonal victory\n");
+	size = 10;
+	InitialiseBoard(board, size);
+	AddMoveToBoard(board, size, 'N', 2, 2, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'N', 1, 2, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'N', 1, 2, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'N', 0, 2, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'N', 0, 2, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'N', 0, 1, &rowPos, &colPos);
+
+	AddMoveToBoard(board, size, 'N', 0, 1, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'N', 1, 1, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'N', 3, 1, &rowPos, &colPos);
+
+	GetMoveBot1(board, size, 1, &side, &move);
+	AddMoveToBoard(board, size, side, move, 1, &rowPos, &colPos);
+	
+	PrintBoard(board, size);
+
+	printf("   Checking for win for Bot 1 in [%d, %d]\n", rowPos, colPos);
+	hasWon = CheckGameOver(board, size, 1, rowPos, colPos);
+	printf("   Result = %d\n", hasWon);
+	passes += (hasWon == 1 ? 1 : 0);
+	tests++;
+	
+
+	// ---------------> Checking that the bot will take take a victory over a defend when it has both options
+	printf("\n--------> Checking that the bot will take take a victory over a defend when it has both options\n");
+	size = 10;
+	InitialiseBoard(board, size);
+	AddMoveToBoard(board, size, 'E', 0, 2, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'E', 1, 2, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'E', 2, 2, &rowPos, &colPos);
+
+	AddMoveToBoard(board, size, 'E', 0, 1, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'E', 1, 1, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'E', 2, 1, &rowPos, &colPos);
+
+	GetMoveBot1(board, size, 1, &side, &move);
+	AddMoveToBoard(board, size, side, move, 1, &rowPos, &colPos);
+	
+	PrintBoard(board, size);
+
+	printf("   Checking for win for Bot 1 in [%d, %d]\n", rowPos, colPos);
+	hasWon = CheckGameOver(board, size, 1, rowPos, colPos);
+	printf("   Result = %d\n", hasWon);
+	passes += (hasWon == 1 ? 1 : 0);
+	tests++;
+
+	// ---------------> Checking that the bot will pick a valid move when there's only one available (only S2 is available)
+	printf("\n--------> Checking that the bot will pick a valid move when there's only one available (only S2 is available)\n");
+	size = 4;
+	InitialiseBoard(board, size);
+	AddMoveToBoard(board, size, 'N', 0, 2, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'N', 0, 1, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'N', 0, 2, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'N', 0, 1, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'E', 0, 2, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'E', 0, 1, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'E', 0, 2, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'S', 3, 1, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'S', 3, 2, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'S', 3, 2, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'S', 1, 2, &rowPos, &colPos);
+
+	GetMoveBot1(board, size, 1, &side, &move);
+	AddMoveToBoard(board, size, side, move, 1, &rowPos, &colPos);
+	
+	PrintBoard(board, size);
+
+	printf("   Checking for win for Bot 1 in [%d, %d]\n", rowPos, colPos);
+	hasWon = CheckGameOver(board, size, 1, rowPos, colPos);
+	printf("   Result = %d\n", hasWon);
+	passes += (hasWon == 1 ? 1 : 0);
+	tests++;
+
+	// ---------------> Checking that the bot will take a victory when it has multiple ways to win
+	printf("\n--------> Checking that the bot will take a victory when it has multiple ways to win\n");
+	size = 10;
+	InitialiseBoard(board, size);
+
+	AddMoveToBoard(board, size, 'E', 1, 1, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'E', 2, 1, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'E', 3, 1, &rowPos, &colPos);
+
+	GetMoveBot1(board, size, 1, &side, &move);
+	AddMoveToBoard(board, size, side, move, 1, &rowPos, &colPos);
+	
+	PrintBoard(board, size);
+
+	printf("   Checking for win for Bot 1 in [%d, %d]\n", rowPos, colPos);
+	hasWon = CheckGameOver(board, size, 1, rowPos, colPos);
+	printf("   Result = %d\n", hasWon);
+	passes += (hasWon == 1 ? 1 : 0);
+	tests++;
+
+	// -------------------------------------------------------
+	// ---------- UNEVEN BOARD TESTS START HERE -------------- 
+	// -------------------------------------------------------
+
+	// ---------------> Check Horizontal victory
+	printf("\n--------> Check Horizontal victory\n");
+	size = 5;
+	InitialiseBoard(board, size);
+	AddMoveToBoard(board, size, 'N', 0, 1, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'N', 1, 1, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'E', 4, 1, &rowPos, &colPos);
+
+	GetMoveBot1(board, size, 1, &side, &move);
+	AddMoveToBoard(board, size, side, move, 1, &rowPos, &colPos);
+	
+	PrintBoard(board, size);
+
+	printf("   Checking for win for Bot 1 in [%d, %d]\n", rowPos, colPos);
+	hasWon = CheckGameOver(board, size, 1, rowPos, colPos);
+	printf("   Result = %d\n", hasWon);
+	passes += (hasWon == 1 ? 1 : 0);
+	tests++;
+
+	// ---------------> Check Horizontal in-between victory
+	printf("\n--------> Check Horizontal in-between victory\n");
+	size = 5;
+	InitialiseBoard(board, size);
+	AddMoveToBoard(board, size, 'N', 0, 1, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'S', 2, 2, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'S', 2, 1, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'E', 4, 1, &rowPos, &colPos);
+
+	GetMoveBot1(board, size, 1, &side, &move);
+	AddMoveToBoard(board, size, side, move, 1, &rowPos, &colPos);
+	
+	PrintBoard(board, size);
+
+	printf("   Checking for win for Bot 1 in [%d, %d]\n", rowPos, colPos);
+	hasWon = CheckGameOver(board, size, 1, rowPos, colPos);
+	printf("   Result = %d\n", hasWon);
+	passes += (hasWon == 1 ? 1 : 0);
+	tests++;
+
+	// ---------------> Check Vertical victory
+	printf("\n--------> Check Vertical victory\n");
+	size = 5;
+	InitialiseBoard(board, size);
+	AddMoveToBoard(board, size, 'S', 0, 1, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'S', 0, 1, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'S', 0, 1, &rowPos, &colPos);
+
+	GetMoveBot1(board, size, 1, &side, &move);
+	AddMoveToBoard(board, size, side, move, 1, &rowPos, &colPos);
+	
+	PrintBoard(board, size);
+
+	printf("   Checking for win for Bot 1 in [%d, %d]\n", rowPos, colPos);
+	hasWon = CheckGameOver(board, size, 1, rowPos, colPos);
+	printf("   Result = %d\n", hasWon);
+	passes += (hasWon == 1 ? 1 : 0);
+	tests++;
+
+	// ---------------> Check Vertical in-between victory
+	printf("\n--------> Check Vertical in-between victory\n");
+	size = 5;
+	InitialiseBoard(board, size);
+	AddMoveToBoard(board, size, 'S', 0, 1, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'W', 2, 2, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'W', 2, 1, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'S', 0, 1, &rowPos, &colPos);
+
+	GetMoveBot1(board, size, 1, &side, &move);
+	AddMoveToBoard(board, size, side, move, 1, &rowPos, &colPos);
+	
+	PrintBoard(board, size);
+
+	printf("   Checking for win for Bot 1 in [%d, %d]\n", rowPos, colPos);
+	hasWon = CheckGameOver(board, size, 1, rowPos, colPos);
+	printf("   Result = %d\n", hasWon);
+	passes += (hasWon == 1 ? 1 : 0);
+	tests++;
+
+	// ---------------> Check bottom-left to top-right diagonal victory
+	printf("\n--------> Check bottom-left to top-right diagonal victory\n");
+	size = 5;
+	InitialiseBoard(board, size);
+	AddMoveToBoard(board, size, 'N', 1, 1, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'S', 2, 1, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'E', 2, 1, &rowPos, &colPos);
+
+
+	GetMoveBot1(board, size, 1, &side, &move);
+	AddMoveToBoard(board, size, side, move, 1, &rowPos, &colPos);
+	
+	PrintBoard(board, size);
+
+	printf("   Checking for win for Bot 1 in [%d, %d]\n", rowPos, colPos);
+	hasWon = CheckGameOver(board, size, 1, rowPos, colPos);
+	printf("   Result = %d\n", hasWon);
+	passes += (hasWon == 1 ? 1 : 0);
+	tests++;
+	
+
+	// ---------------> Checking that the bot will take an in-between diagonal victory
+	printf("\n--------> Checking that the bot will take an in-between diagonal victory\n");
+	size = 5;
+	InitialiseBoard(board, size);
+	AddMoveToBoard(board, size, 'N', 1, 1, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'W', 1, 1, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'E', 2, 1, &rowPos, &colPos);
+	
+	GetMoveBot1(board, size, 1, &side, &move);
+	AddMoveToBoard(board, size, side, move, 1, &rowPos, &colPos);
+	
+	PrintBoard(board, size);
+
+	printf("   Checking for win for Bot 1 in [%d, %d]\n", rowPos, colPos);
+	hasWon = CheckGameOver(board, size, 1, rowPos, colPos);
+	printf("   Result = %d\n", hasWon);
+	passes += (hasWon == 1 ? 1 : 0);
+	tests++;
+
+	// ---------------> Check top-left to bottom-right diagonal victory
+	printf("\n--------> Check top-left to bottom-right diagonal victory\n");
+	size = 5;
+	InitialiseBoard(board, size);
+	AddMoveToBoard(board, size, 'S', 1, 1, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'N', 2, 1, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'E', 2, 1, &rowPos, &colPos);
+
+
+	GetMoveBot1(board, size, 1, &side, &move);
+	AddMoveToBoard(board, size, side, move, 1, &rowPos, &colPos);
+	
+	PrintBoard(board, size);
+
+	printf("   Checking for win for Bot 1 in [%d, %d]\n", rowPos, colPos);
+	hasWon = CheckGameOver(board, size, 1, rowPos, colPos);
+	printf("   Result = %d\n", hasWon);
+	passes += (hasWon == 1 ? 1 : 0);
+	tests++;
+
+	// ---------------> Check top-left to bottom-right in-between diagonal victory
+	printf("\n--------> Check top-left to bottom-right in-between diagonal victory\n");
+	size = 5;
+	InitialiseBoard(board, size);
+	AddMoveToBoard(board, size, 'S', 1, 1, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'N', 2, 1, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'W', 3, 1, &rowPos, &colPos);
+
+	GetMoveBot1(board, size, 1, &side, &move);
+	AddMoveToBoard(board, size, side, move, 1, &rowPos, &colPos);
+	
+	PrintBoard(board, size);
+
+	printf("   Checking for win for Bot 1 in [%d, %d]\n", rowPos, colPos);
+	hasWon = CheckGameOver(board, size, 1, rowPos, colPos);
+	printf("   Result = %d\n", hasWon);
+	passes += (hasWon == 1 ? 1 : 0);
+	tests++;
+	
+
+	// ---------------> Checking that the bot will take take a victory over a defend when it has both options
+	printf("\n--------> Checking that the bot will take take a victory over a defend when it has both options\n");
+	size = 5;
+	InitialiseBoard(board, size);
+	AddMoveToBoard(board, size, 'E', 0, 2, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'E', 0, 2, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'E', 0, 2, &rowPos, &colPos);
+
+	AddMoveToBoard(board, size, 'E', 1, 1, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'E', 1, 1, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'E', 1, 1, &rowPos, &colPos);
+
+	GetMoveBot1(board, size, 1, &side, &move);
+	AddMoveToBoard(board, size, side, move, 1, &rowPos, &colPos);
+	
+	PrintBoard(board, size);
+
+	printf("   Checking for win for Bot 1 in [%d, %d]\n", rowPos, colPos);
+	hasWon = CheckGameOver(board, size, 1, rowPos, colPos);
+	printf("   Result = %d\n", hasWon);
+	passes += (hasWon == 1 ? 1 : 0);
+	tests++;
+
+	// ---------------> Checking that the bot will pick a valid move when there's only one available (only S3 is available)
+	printf("\n--------> Checking that the bot will pick a valid move when there's only one available (only S3 is available)\n");
+	size = 5;
+	InitialiseBoard(board, size);
+	AddMoveToBoard(board, size, 'N', 0, 2, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'N', 0, 2, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'N', 0, 2, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'N', 0, 2, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'N', 0, 2, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'E', 0, 2, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'E', 0, 2, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'E', 0, 2, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'E', 0, 2, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'E', 4, 2, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'E', 4, 2, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'S', 4, 2, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'S', 4, 2, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'S', 4, 2, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'S', 4, 2, &rowPos, &colPos);
+
+
+	GetMoveBot1(board, size, 1, &side, &move);
+	AddMoveToBoard(board, size, side, move, 1, &rowPos, &colPos);
+	
+	PrintBoard(board, size);
+
+	printf("   Checking for win for Bot 1 in [%d, %d]\n", rowPos, colPos);
+	hasWon = CheckGameOver(board, size, 1, rowPos, colPos);
+	printf("   Result = %d\n", hasWon);
+	passes += (side == 'S' && move == 3 ? 1 : 0);
+	tests++;
+
+	// ---------------> Checking that the bot will take a victory when it has multiple ways to win
+	printf("\n--------> Checking that the bot will take a victory when it has multiple ways to win\n");
+	size = 5;
+	InitialiseBoard(board, size);
+
+	AddMoveToBoard(board, size, 'N', 2, 1, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'W', 1, 1, &rowPos, &colPos);
+	AddMoveToBoard(board, size, 'E', 1, 1, &rowPos, &colPos);
+
+	GetMoveBot1(board, size, 1, &side, &move);
+	AddMoveToBoard(board, size, side, move, 1, &rowPos, &colPos);
+	
+	PrintBoard(board, size);
+
+	printf("   Checking for win for Bot 1 in [%d, %d]\n", rowPos, colPos);
+	hasWon = CheckGameOver(board, size, 1, rowPos, colPos);
+	printf("   Result = %d\n", hasWon);
+	passes += (hasWon == 1 ? 1 : 0);
+	tests++;
+
+
+
+
+	printf("------> Bot 1 passed %d/%d tests\n", passes, tests);
+	
+}
+
 void MyTestFunction(void)
 {
 	// An example of code that you could use to test Task One.
 	// You should write additional tests of your own
+	// You can assume each of the three inputs is a positive integer, greater than zero
 	printf("\nTESTING TASK ONE:\n");
 	printf("=================\n");
-	printf("   Prize = %d\n", SecondPlacePrize(200, 100, 200));
-	printf("   Prize = %d\n", SecondPlacePrize(45, 600, 590));
-	printf("   Prize = %d\n", SecondPlacePrize(777, 777, 777));
-	printf("   Prize = %d\n", SecondPlacePrize(-100, -100, 200));
+	printf("   Prize = %d (expected %d)\n", SecondPlacePrize(200, 100, 200), 200);
+	printf("   Prize = %d (expected %d)\n", SecondPlacePrize(45, 600, 590), 590);
+	printf("   Prize = %d (expected %d)\n", SecondPlacePrize(2, 2, 2), 2); // All values equal
+	printf("   Prize = %d (expected %d)\n", SecondPlacePrize(3, 3, 7), 3); // Second place same as third place (smallest first)
+	printf("   Prize = %d (expected %d)\n", SecondPlacePrize(8, 2, 2), 2); // Second place same as third place (smallest last)
+	printf("   Prize = %d (expected %d)\n", SecondPlacePrize(12, 12, 4), 12); // Second place same as first place (largest first)
+	printf("   Prize = %d (expected %d)\n", SecondPlacePrize(3, 9, 9), 9); // Second place same as third place (largest last)
+	printf("   Prize = %d (expected %d)\n", SecondPlacePrize(5, 2, 5), 5); // Outer values are second place (largest first)
+	printf("   Prize = %d (expected %d)\n", SecondPlacePrize(1, 2, 1), 1); // Outer values are second place (smallest first)
 
 	// An example of code that you could use to test Task Two.
 	// You should write additional tests of your own
@@ -87,16 +629,33 @@ void MyTestFunction(void)
 	char nameA[100] = "The       Champ";
 	char nameB[100] = "     I    AM      THE     GREATEST    ";
 	char nameC[100] = "Therearenospaceshereatall";
-	char nameD[100] = "d";
+	char nameD[100] = "D";
+	char nameE[100] = " ";
+	char nameF[100] = "F                    ";
+	char nameG[100] = "                    G";
+	char nameH[100] = "                    H                    ";
+	char nameI[100] = "                                       ";
+	char nameJ[100] = " A B C D E F ";
 	RemoveSpaces(nameA);
 	RemoveSpaces(nameB);
 	RemoveSpaces(nameC);
+	RemoveSpaces(nameD);
+	RemoveSpaces(nameE);
+	RemoveSpaces(nameF);
+	RemoveSpaces(nameG);
+	RemoveSpaces(nameH);
+	RemoveSpaces(nameI);
+	RemoveSpaces(nameJ);
 	printf("   Name A = [%s]\n", nameA);
 	printf("   Name B = [%s]\n", nameB);
 	printf("   Name C = [%s]\n", nameC);
 	printf("   Name D = [%s]\n", nameD);
-
-	
+	printf("   Name E = [%s]\n", nameE);
+	printf("   Name F = [%s]\n", nameF);
+	printf("   Name G = [%s]\n", nameG);
+	printf("   Name H = [%s]\n", nameH);
+	printf("   Name I = [%s]\n", nameI);
+	printf("   Name J = [%s]\n", nameJ);
 
 	// An example of code that you could use to test Task Six.
 	// You should write additional tests of your own
@@ -402,12 +961,20 @@ int main(void)
 	printf("      [you should write your own test code for this in MyTestFunction()]\n");
 	printf("  1 = Play Connect Four\n");
 	printf("      [this will only work if you to have completed all of the functions)]\n");
-	printf("\nPlease enter your choice [0 or 1]:  ");
+	printf("  2 = Custom test\n");
+	printf("      [User defined test]\n");
+	printf("  3 = Test Bot\n");
+	printf("      [Test Bot 1 to verify it's making the expected move in different scenarios]\n");
+	printf("\nPlease enter your choice:  ");
 	scanf("%d", &input);
 	if (input == 0) {
 		MyTestFunction();
-	} else {
+	} else if (input == 1) {
 		PlayConnectFour();
+	} else if (input == 2) {
+		CustomTest();
+	} else { 
+		TestBot();
 	}
 
 	return 0;
