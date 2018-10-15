@@ -635,7 +635,7 @@ void TestValidMoves(void) {
 			i = rand() % length;
 			AddMoveToBoard(board, size, sides[i], moves[i], 1, &rowPos, &colPos);
 			if (rowPos == -1 || colPos == -1) {
-				printf("Stopped due to invalid move after %d moves\n", passes);
+				printf("FAILED to fill size %d due to invalid move after %d moves\n", size, passes);
 				break;
 			}
 			passes += ((rowPos != -1 && colPos != -1) ? 1 : 0);
