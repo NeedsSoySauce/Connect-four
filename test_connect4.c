@@ -597,7 +597,7 @@ void TestBot(void) {
 void TestBotExtended(void) {
 
 	int board[MAX_SIZE][MAX_SIZE];
-	int hasWon, size, move, rowPos, colPos;
+	int size, move, rowPos, colPos;
 	char side;
 
 	int passes = 0;

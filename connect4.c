@@ -10,7 +10,7 @@ StudentID: 606316303
 #include "connect4.h"
 
 // Ever felt like playing connect 5? Now you can!
-#define SEQ_LEN 4 
+#define SEQ_LEN 4
 
 // These affect the appearance of the board
 #define TOKEN1 'X'
@@ -22,7 +22,7 @@ StudentID: 606316303
 // Used to determine the max depth of the Minimax tree used by Bot 1 and 2.
 // The bot will NOT play properly if this is less than 2 (so don't set it less than 2!).
 // Higher values will result in the bot playing better but taking significantly longer to make its move.
-#define MAX_DEPTH 4
+#define MAX_DEPTH 6
 
 // Used to determine the max distance to nearby pieces when calling CountNeighbours in Minimax
 #define MAX_DIST 1
@@ -34,8 +34,8 @@ StudentID: 606316303
 #define EMPTY_SPACE_VAL 2
 
 // These are used for alpha-beta pruning. There is no need to change these.
-#define POS_INF (1 << (sizeof(int)*8-1)) - 1 // Idea from https://stackoverflow.com/questions/1855459/maximum-value-of-int
-#define NEG_INF INT_MAX * -1 - 1
+#define MAX_INT 2147483647
+#define MIN_INT -MAX_INT - 1
 
 typedef struct Point {
 	int row, col;
@@ -496,12 +496,13 @@ void CountNeighbours(int board[MAX_SIZE][MAX_SIZE], int size, int player, int x,
 	}
 }
 
-int Minimax(int board[MAX_SIZE][MAX_SIZE], int size, int player, char side, int move, int depth, int rootPlayer) {
+int Minimax(int board[MAX_SIZE][MAX_SIZE], int size, int player, char side, int move, 
+			int depth, int alpha, int beta, int rootPlayer) {
 	
 	int i, length, row, col, outcome, rating, bestRating, playerTokens, opponentTokens, emptySpaces;
 	int moves[MAX_SIZE*4];
 	char sides[MAX_SIZE*4];
-	
+
 	// Add the given move to the board and then check the game's state
 	AddMoveToBoard(board, size, side, move, player, &row, &col);
 	outcome = CheckGameOver(board, size, player, row, col);
@@ -522,19 +523,22 @@ int Minimax(int board[MAX_SIZE][MAX_SIZE], int size, int player, char side, int 
 	// If we get here then we haven't reached the max tree depth and the game's state hasn't changed
 	// so we call Minimax for all possible moves based on the current board state
 	GetValidMoves(board, size, sides, moves, &length);
-	bestRating = Minimax(board, size, 3 - player, sides[0], moves[0], depth+1, !rootPlayer);
+	bestRating = Minimax(board, size, 3 - player, sides[0], moves[0], depth+1, alpha, beta, !rootPlayer);
 	
 	// Call Minimax for the other player for each valid move on the board
 	for (i = 1; i < length; i++) {
-		rating = Minimax(board, size, 3 - player, sides[i], moves[i], depth+1, !rootPlayer);
+		rating = Minimax(board, size, 3 - player, sides[i], moves[i], depth+1, alpha, beta, !rootPlayer);
 		if (rootPlayer) {
-			if (rating < bestRating) {
-				bestRating = rating;
-			}
+			bestRating = (rating < bestRating ? rating : bestRating);
+			beta = (rating < beta ? rating : beta);
 		} else {
-			if (rating > bestRating) {
-				bestRating = rating;
-			}
+
+			bestRating = (rating > bestRating ? rating : bestRating);
+			alpha = (rating > alpha ? rating : alpha);
+		}
+
+		if (beta <= alpha) {
+			break;
 		}
 	}
 
@@ -562,15 +566,17 @@ void GetMoveBot1(int board[MAX_SIZE][MAX_SIZE], int size, int player, char *side
 	int pos = 0;
 	int moves[MAX_SIZE*4];
 	char sides[MAX_SIZE*4];
+	int alpha = MIN_INT;
+	int beta = MAX_INT;
 	
 	// Initially we grab all the valid moves based on the board's current state
 	GetValidMoves(board, size, sides, moves, &length);
-	max = Minimax(board, size, player, sides[0], moves[0], depth+1, 1);
+	max = Minimax(board, size, player, sides[0], moves[0], depth+1, alpha, beta, 1);
 
 	// We start off by calling Minimax on all possible movies this player could make and
 	// then use this information to pick the move that has the highest rating 
 	for (i = 1; i < length; i++) {
-		rating = Minimax(board, size, player, sides[i], moves[i], depth+1, 1);
+		rating = Minimax(board, size, player, sides[i], moves[i], depth+1, alpha, beta, 1);
 		if (rating >= max) {
 			max = rating;
 			pos = i;
