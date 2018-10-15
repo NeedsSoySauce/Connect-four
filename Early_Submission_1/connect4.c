@@ -1,12 +1,6 @@
 /* ENGGEN131 Project - C Project - 2018 */
 /* Connect Four */
 
-/*
-Author: Feras Albaroudi
-StudentID: 606316303
-*/
-
-
 #include "connect4.h"
 
 // Ever felt like playing connect 5? Now you can!
@@ -19,51 +13,46 @@ StudentID: 606316303
 #define SPACE '.'
 #define BORDER '-'
 
-// Used to determine the max depth of the Minimax tree used by Bot 1 and 2.
-// The bot will NOT play properly if this is less than 2 (so don't set it less than 2!).
-// Higher values will result in the bot playing better but taking significantly longer to make its move.
-#define MAX_DEPTH 4
+// Used to determine the max depth of the Minimax tree used by Bot 1 and 2
+#define MAX_DEPTH 4 
 
 // Used to determine the max distance to nearby pieces when calling CountNeighbours in Minimax
-#define MAX_DIST 1
+#define MAX_DIST 2
 
-// These control how the bot rates moves
-#define VICTORY_VAL 100000 // This must be a value large enough to outweight any other option
-#define FRIENDLY_TOKEN_VAL 3
-#define OPPONENT_TOKEN_VAL 1
-#define EMPTY_SPACE_VAL 2
-
-// These are used for alpha-beta pruning. There is no need to change these.
-#define POS_INF (1 << (sizeof(int)*8-1)) - 1 // Idea from https://stackoverflow.com/questions/1855459/maximum-value-of-int
-#define NEG_INF INT_MAX * -1 - 1
+/*
+Author: Feras Albaroudi
+StudentID: 606316303
+*/
 
 typedef struct Point {
 	int row, col;
 } Pt;
 
-// Compares a and b and returns:
-// A value greater than 0 if a > b
-// 0 if a == b
-// A value less than 0 if a < b
-int cmpInt(const void *a, const void *b) {
-	return (*(int*)a - *(int*)b);
-}
-
 // Determines the second largest value of the three input values
 int SecondPlacePrize(int prize1, int prize2, int prize3)
 {
-	int prizes[3];
-	prizes[0] = prize1;
-	prizes[1] = prize2;
-	prizes[2] = prize3;
-	
-	// Sort prizes in order from smallest to largest
-	qsort(prizes, 3, sizeof(int), cmpInt);
 
-	return prizes[1];
+	int max = prize1;
+	int second = prize1;
+
+	if (prize2 > max) {
+		second = max;
+		max = prize2;		
+	} else if (prize2 > second) {
+		second = prize2;
+	}
+
+	if (prize3 > max) {
+		second = max;
+		max = prize3;
+	} else if (prize3 > second) {
+		second = prize3;
+	}
+
+	return second;
 }
 
-// Determines the starting index of the first consecutive sequence of the same value.
+// Determines the starting index of the first consecutive sequence of the same value
 // If no such sequence exists, returns -1
 int FourInARow(int values[], int length)
 {
@@ -113,7 +102,7 @@ int BinaryToDecimal(int binary)
 // 1 if a > b
 // 0 if a == b
 // -1 if a < b
-int cmpDouble(const void *a, const void *b) {
+int comparator(const void *a, const void *b) {
 	double diff = (*(double*)a - *(double*)b) ;
 	return (diff > 0 ? 1 : diff < 0 ? -1 : 0);
 }
@@ -123,7 +112,7 @@ double MedianAbility(double abilities[], int length)
 {
 	
 	// Sort the array into ascending order
-	qsort(abilities, length, sizeof(double), cmpDouble);
+	qsort(abilities, length, sizeof(double), comparator);
 	int mid = length / 2;
 
 	// If the array is even the median value is the middle-most value in the array,
@@ -135,27 +124,50 @@ double MedianAbility(double abilities[], int length)
 	}
 }
 
-// Removes the character at the index pos from a given character array
-void RemoveCharacter(char *name, int pos) {
-	int i = pos;
-	while (name[i] != '\0') {
-		name[i] = name[i+1];
-		i++;
-	}
-}
-
 // Removes excess spaces in a string by reducing any sequence of spaces in a string 
 // greater than 1 to a single space.
 void RemoveSpaces(char *name)
 {
-	int i = 0;
+	int i = 0; // i is our 'write' position and always records the position we're writing to
+	int j = 0; // j is our 'swap' postion and always records the position wrapping a value to/from
+
 	while (name[i] != '\0') {
-		// If we encounter two spaces in a row we remove one of them
-		if (name[i] == ' ' && name[i+1] == ' ') {
-			RemoveCharacter(name, i);
-		} else {
+
+		// If this character isn't a space then we don't need to do anything
+		if (name[i] != ' ') {
+			i++;
+			continue;
+		}
+
+		// If we've encountered a space shift our index right by 1 
+		// to keep a single space
+		if (name[i] == ' ') { 
 			i++;
 		}
+
+		j = i;
+
+		// Shift j to the next non-space character
+		while (name[j] == ' ') {
+			j++;
+		}
+
+		// Keep swapping characters until we encounter another space
+		while (name[j] != ' ') {
+			
+			name[i] = name[j];
+
+			// If the character we swapped was the null terminator
+			// then we're done
+			if (name[j] == '\0') {
+				return;
+			} else {
+				name[j] = ' ';
+			}
+			
+			i++;
+			j++;
+		} 
 	}
 }
 
@@ -221,6 +233,7 @@ void AddMoveToBoard(int board[MAX_SIZE][MAX_SIZE], int size, char side, int move
 			break;
 		default :
 			return; // Invalid side so we do nothing
+
 	}
 
 	// Check if the move is invalid
@@ -232,8 +245,7 @@ void AddMoveToBoard(int board[MAX_SIZE][MAX_SIZE], int size, char side, int move
 
 	// Keep "moving" the piece until it hits something while ensuring 
 	// we don't read anything that's out of bounds of the array
-	while (row+rowVel >= 0 && col+colVel >= 0 && row+rowVel < size && 
-		   col+colVel < size && board[row+rowVel][col+colVel] == 0) {
+	while (row+rowVel >= 0 && col+colVel >= 0 && row+rowVel < size && col+colVel < size && board[row+rowVel][col+colVel] == 0) {
 		row += rowVel;
 		col += colVel;
 	}
@@ -458,10 +470,10 @@ void GetValidMoves(int board[MAX_SIZE][MAX_SIZE], int size, char sides[MAX_SIZE*
 
 }
 
-// Counts how many of the tokens around a given piece are from the given player's side and
+// Counts how many of the tokens around a given piece are from the given player's side,
 // the other player's side, as well as how many of the nearby positions are empty spaces on the board
 void CountNeighbours(int board[MAX_SIZE][MAX_SIZE], int size, int player, int x, int y, int dist, 
-					 int *playerTokens, int *opponentTokens, int *emptySpaces) {
+					int *playerTokens, int *opponentTokens, int *emptySpaces) {
 
 	*playerTokens = 0;
 	*opponentTokens = 0;
@@ -477,8 +489,7 @@ void CountNeighbours(int board[MAX_SIZE][MAX_SIZE], int size, int player, int x,
 
 		for (int col = y-dist; col <= y+dist; col++) {
 
-			// Ignore cols that are out of array bounds or positions that are equal 
-			// to the given x and y positions
+			// Ignore cols that are out of array bounds or equal to the given x and y positions
 			if (col < 0 || col > size - 1 || (row == x && col == y)) {
 				continue;
 			}
@@ -508,7 +519,7 @@ int Minimax(int board[MAX_SIZE][MAX_SIZE], int size, int player, char side, int 
 
 	// We perform an evaluation if there's a change in the game's state or we reach the max tree depth
 	if (outcome != 0) {
-		rating = VICTORY_VAL + (MAX_DEPTH - depth);
+		rating = 10 + (MAX_DEPTH - depth); // <----- This is the ERROR in task 10 for this submission!!!!! I didn't raise the weight of a winning move enough!
 		if (!rootPlayer) {
 			rating *= -1;
 		}
@@ -541,7 +552,7 @@ int Minimax(int board[MAX_SIZE][MAX_SIZE], int size, int player, char side, int 
 	if (depth == 1 && bestRating == 0) {
 		// Number of this player's nearby tokens as well as empty spaces
 		CountNeighbours(board, size, player, row, col, MAX_DIST, &playerTokens, &opponentTokens, &emptySpaces);
-		bestRating = FRIENDLY_TOKEN_VAL* playerTokens + OPPONENT_TOKEN_VAL * opponentTokens + EMPTY_SPACE_VAL * emptySpaces;
+		bestRating = playerTokens + emptySpaces;
 		if (!rootPlayer) {
 			bestRating *= -1;
 		}
@@ -581,8 +592,6 @@ void GetMoveBot1(int board[MAX_SIZE][MAX_SIZE], int size, int player, char *side
 	// multiple options with the same score, we just pick the first one.
 	*side = sides[pos];
 	*move = moves[pos];
-
-	// printf("Bot %d plays %c%d with rating %d\n", player, *side, *move, max);
 
 }
 
