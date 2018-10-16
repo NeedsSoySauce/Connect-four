@@ -3,9 +3,8 @@
 
 /*
 Author: Feras Albaroudi
-StudentID: 606316303
+StudentID: 606316306
 */
-
 
 #include "connect4.h"
 
@@ -20,12 +19,17 @@ StudentID: 606316303
 #define BORDER '-'
 
 // Used to determine the max depth of the Minimax tree used by Bot 1 and 2.
-// The bot will NOT play properly if this is less than 2 (so don't set it less than 2!).
 // Higher values will result in the bot playing better but taking significantly longer to make its move.
-#define MAX_DEPTH 4
+// e.g. at depth 2, board size 7 and 1000 games against itself it takes 6.5 seconds where's at depth 4 it takes 900 seconds
+#define MAX_DEPTH 2
 
-// Used to determine the max distance to nearby pieces when calling CountNeighbours in Minimax
-#define MAX_DIST 1
+// Used to determine the max distance to search for nearby pieces when calling CountNeighbours in Minimax
+#define NEIGHBOUR_DIST 1
+
+// If true, the bot will only consider moves that would place a piece within NEIGHBOUR_DIST of another token
+// This can significantly reduce how much time the bot takes to pick a move at the cost of limiting the moves it can make
+// e.g. at depth 2, board size 7 and 1000 games against itself it takes 5.3 seconds where's at depth 4 it takes 244 seconds
+#define ONLY_PLACE_NEAR_TOKENS 1
 
 // These control how the bot rates moves
 #define VICTORY_VAL 100000 // This must be a value large enough to outweight any other option
@@ -418,7 +422,7 @@ void GetDisplayBoardString(int board[MAX_SIZE][MAX_SIZE], int size, char *boardS
 
 }
 
-// Fills two arrays with all valid moves based on the current board state for the given player
+// Fills the given validMoves array with all valid moves based on the current board state for the given player
 void GetValidMoves(int board[MAX_SIZE][MAX_SIZE], int size, struct BoardPos validMoves[MAX_SIZE*4], int *length) {
 	// A valid move is considered as any move that:
 	// - Won't place a piece where one already exists on the edges of the board
@@ -475,14 +479,14 @@ void CountNeighbours(int board[MAX_SIZE][MAX_SIZE], int size, int player, int x,
 
 	for (int row = x-dist; row <= x+dist; row++) {
 
-		// Ignore rows that are out of array bounds
+		// Ignore rows that are out of bounds of the board
 		if (row < 0 || row > size - 1) {
 			continue;
 		}
 
 		for (int col = y-dist; col <= y+dist; col++) {
 
-			// Ignore cols that are out of array bounds or positions that are equal 
+			// Ignore cols that are out of bounds of the the board or positions that are equal 
 			// to the given x and y positions
 			if (col < 0 || col > size - 1 || (row == x && col == y)) {
 				continue;
@@ -501,6 +505,39 @@ void CountNeighbours(int board[MAX_SIZE][MAX_SIZE], int size, int player, int x,
 	}
 }
 
+// Removes any moves from the given validMoves array that do not have any neighbours. If this would result in there being no
+// valid moves (e.g. no tokens on the board yet) this does nothing
+void RemoveMovesWithNoNeighbours(int board[MAX_SIZE][MAX_SIZE], int size, int player, 
+								 struct BoardPos validMoves[MAX_SIZE*4], int *length) {
+
+	int i, row, col, playerTokens, opponentTokens, emptySpaces;
+	struct BoardPos movesWithNeighbours[MAX_SIZE*4];
+	int count = 0;
+	
+	if (!ONLY_PLACE_NEAR_TOKENS) {
+		return;
+	}
+
+	for (i = 0; i < *length; i++) {
+		AddMoveToBoard(board, size, validMoves[i].side, validMoves[i].move, player, &row, &col);
+		CountNeighbours(board, size, player, row, col, NEIGHBOUR_DIST, &playerTokens, &opponentTokens, &emptySpaces);
+		board[row][col] = 0;
+		if ((playerTokens + opponentTokens) > 0) {
+			movesWithNeighbours[count] = validMoves[i];
+			count++;
+		}
+	}
+
+	if (count > 0) {
+		for (i = 0; i < count; i++) {
+			validMoves[i] = movesWithNeighbours[i];
+		}
+		*length = count;	
+	}
+}
+
+// Minimax algorithm with alpha-beta pruning. This implementation is based on (but not copied from) the following
+// video: https://www.youtube.com/watch?v=l-hh51ncgDI
 int Minimax(int board[MAX_SIZE][MAX_SIZE], int size, int player, struct BoardPos validMove, 
 			int depth, int alpha, int beta, int rootPlayer) {
 	
@@ -513,13 +550,13 @@ int Minimax(int board[MAX_SIZE][MAX_SIZE], int size, int player, struct BoardPos
 
 	// We perform an evaluation if there's a change in the game's state or we reach the max tree depth
 	if (outcome != 0) {
-		rating = VICTORY_VAL + (MAX_DEPTH - depth);
+		rating = VICTORY_VAL + depth;
 		if (!rootPlayer) {
 			rating *= -1;
 		}
 		board[row][col] = 0;
 		return rating;
-	} else if (depth >= MAX_DEPTH) { 
+	} else if (depth <= 0) { 
 		board[row][col] = 0;
 		return 0;
 	}
@@ -527,11 +564,12 @@ int Minimax(int board[MAX_SIZE][MAX_SIZE], int size, int player, struct BoardPos
 	// If we get here then we haven't reached the max tree depth and the game's state hasn't changed
 	// so we call Minimax for all possible moves based on the current board state
 	GetValidMoves(board, size, validMoves, &length);
-	bestRating = Minimax(board, size, 3 - player, validMoves[0], depth+1, alpha, beta, !rootPlayer);
+	RemoveMovesWithNoNeighbours(board, size, player, validMoves, &length);
+	bestRating = Minimax(board, size, 3 - player, validMoves[0], depth-1, alpha, beta, !rootPlayer);
 	
 	// Call Minimax for the other player for each valid move on the board
 	for (i = 1; i < length; i++) {
-		rating = Minimax(board, size, 3 - player, validMoves[i], depth+1, alpha, beta, !rootPlayer);
+		rating = Minimax(board, size, 3 - player, validMoves[i], depth-1, alpha, beta, !rootPlayer);
 		if (rootPlayer) {
 			bestRating = (rating < bestRating ? rating : bestRating);
 			beta = (rating < beta ? rating : beta);
@@ -548,7 +586,7 @@ int Minimax(int board[MAX_SIZE][MAX_SIZE], int size, int player, struct BoardPos
 
 	if (depth == 1 && bestRating == 0) {
 		// Number of this player's nearby tokens as well as empty spaces
-		CountNeighbours(board, size, player, row, col, MAX_DIST, &playerTokens, &opponentTokens, &emptySpaces);
+		CountNeighbours(board, size, player, row, col, NEIGHBOUR_DIST, &playerTokens, &opponentTokens, &emptySpaces);
 		bestRating = FRIENDLY_TOKEN_VAL* playerTokens + OPPONENT_TOKEN_VAL * opponentTokens + EMPTY_SPACE_VAL * emptySpaces;
 		if (!rootPlayer) {
 			bestRating *= -1;
@@ -564,34 +602,30 @@ int Minimax(int board[MAX_SIZE][MAX_SIZE], int size, int player, struct BoardPos
 void GetMoveBot1(int board[MAX_SIZE][MAX_SIZE], int size, int player, char *side, int *move)
 {
 	int i, length;
-	int depth = 0;
 	int rating = 0;
-	int max = 0;
+	int max = MIN_INT;
 	int pos = 0;
 	BoardPos validMoves[MAX_SIZE*4];
 	int alpha = MIN_INT;
 	int beta = MAX_INT;
-	
+
 	// Initially we grab all the valid moves based on the board's current state
 	GetValidMoves(board, size, validMoves, &length);
-	max = Minimax(board, size, player, validMoves[0], depth+1, alpha, beta, 1);
+	RemoveMovesWithNoNeighbours(board, size, player, validMoves, &length);
 
 	// We start off by calling Minimax on all possible movies this player could make and
 	// then use this information to pick the move that has the highest rating 
-	for (i = 1; i < length; i++) {
-		rating = Minimax(board, size, player, validMoves[i], depth+1, alpha, beta, 1);
+	for (i = 0; i < length; i++) {
+		rating = Minimax(board, size, player, validMoves[i], MAX_DEPTH, alpha, beta, 1);
 		if (rating >= max) {
 			max = rating;
 			pos = i;
 		}
 	}
 
-	// The move we play will be the move with the highest rating. If there's
-	// multiple options with the same score, we just pick the first one.
+	// Play the move with the highest rating
 	*side = validMoves[pos].side;
 	*move = validMoves[pos].move;
-
-	// printf("Bot %d plays %c%d with rating %d\n", player, *side, *move, max);
 
 }
 

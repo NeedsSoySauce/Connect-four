@@ -1331,6 +1331,9 @@ void PlayConnectFour(void)
 	// If a tournament is played (between two bots), the starting player alternates
 	player = 1;
 
+	clock_t begin = clock();
+
+	/* here, do your time-consuming job */
 	for (i = 0; i < numberOfGames; i++) {
 		result = PlayOneGame(player, size, gameType);
 		if (result == 1) {
@@ -1341,6 +1344,10 @@ void PlayConnectFour(void)
 		// Switch the starting player for the next game
 		player = 3 - player;
 	}
+	
+	clock_t end = clock();
+	double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
+	printf("Time to complete %d games = %.1f seconds\n", numberOfGames, time_spent);
 
 	// If a single game was played, show the result of the game, otherwise report the result of the tournament:
 	if (numberOfGames == 1) {
