@@ -1288,6 +1288,7 @@ int PlayOneGame(int startingPlayer, int size, int gameType)
 			player = 3 - player;
 		}
 	}
+	PrintBoard(board, size);
 	return player;
 }
 
